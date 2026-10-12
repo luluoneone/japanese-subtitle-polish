@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>try{const t=localStorage.getItem("jsp-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+<title>字幕の確認 — __TITLE__</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+/* LULU Apps の製品（Koe Studio）と同じトークン・部品を使う。
+   配色は「自動／ライト／ダーク」を選べる。映像の枠（ビューア）だけは常に暗い。 */
+:root {
+  --bg: #f4f5fb; --surface: #ffffff; --panel: #fafbfe; --sunken: #eef0f8; --side: #eceefa;
+  --line: rgba(34, 36, 74, 0.10); --line-strong: rgba(34, 36, 74, 0.18);
+  --text: #16172e; --sub: #5a5d7a; --faint: #8a8ca6;
+  --accent: #534edc; --accent-press: #4640c8; --accent-soft: rgba(83, 78, 220, 0.10);
+  --brand: linear-gradient(135deg, #678bfb 0%, #534edc 60%, #3b36b8 100%);
+  --ok: #248a3d; --ok-soft: rgba(36, 138, 61, 0.10); --danger: #d70015; --danger-soft: rgba(215, 0, 21, 0.08);
+  --warn: #a35200; --warn-soft: rgba(201, 105, 0, 0.12); --caution: #8a6d00; --caution-soft: rgba(214, 170, 0, 0.16);
+  --c-fix: #534edc; --c-lb: #aeb0ef; --c-review: #e58600; --c-stop: #d70015; --c-long: #e0b100; --c-long-2: #c39900;
+  --c-mine: #248a3d; --c-same: #d7d9e8;
+  --shadow: 0 1px 2px rgba(22, 23, 46, 0.05), 0 8px 24px rgba(22, 23, 46, 0.06);
+  --r-s: 8px; --r: 12px; --r-l: 18px;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14152a; --surface: #1d1f3b; --panel: #1a1c36; --sunken: #262950; --side: #1a1b2f;
+    --line: rgba(255, 255, 255, 0.08); --line-strong: rgba(255, 255, 255, 0.16);
+    --text: #eef0ff; --sub: #a9acd0; --faint: #7c80a8;
+    --accent: #7b78f2; --accent-press: #6d69ea; --accent-soft: rgba(123, 120, 242, 0.18);
+    --ok: #30d158; --ok-soft: rgba(48, 209, 88, 0.14); --danger: #ff6961; --danger-soft: rgba(255, 105, 97, 0.14);
+    --warn: #ffb340; --warn-soft: rgba(255, 159, 10, 0.15); --caution: #ffe066; --caution-soft: rgba(255, 214, 10, 0.12);
+    --c-fix: #7b78f2; --c-lb: #3f3f86; --c-review: #ff9f0a; --c-stop: #ff6961; --c-long: #ffd60a; --c-long-2: #b89a00;
+    --c-mine: #30d158; --c-same: #2f3260;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14152a; --surface: #1d1f3b; --panel: #1a1c36; --sunken: #262950; --side: #1a1b2f;
+  --line: rgba(255, 255, 255, 0.08); --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #eef0ff; --sub: #a9acd0; --faint: #7c80a8;
+  --accent: #7b78f2; --accent-press: #6d69ea; --accent-soft: rgba(123, 120, 242, 0.18);
+  --ok: #30d158; --ok-soft: rgba(48, 209, 88, 0.14); --danger: #ff6961; --danger-soft: rgba(255, 105, 97, 0.14);
+  --warn: #ffb340; --warn-soft: rgba(255, 159, 10, 0.15); --caution: #ffe066; --caution-soft: rgba(255, 214, 10, 0.12);
+  --c-fix: #7b78f2; --c-lb: #3f3f86; --c-review: #ff9f0a; --c-stop: #ff6961; --c-long: #ffd60a; --c-long-2: #b89a00;
+  --c-mine: #30d158; --c-same: #2f3260;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 15px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; border-radius: 6px; }
+[hidden] { display: none !important; }
+.tc { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+/* ── 骨組み ── */
+.app { display: grid; grid-template-rows: auto minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); height: 100vh; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 12px 20px; background: var(--side); border-bottom: 1px solid var(--line); }
+.brand-mark { width: 34px; height: 34px; border-radius: 9px; background: var(--brand); display: grid; place-items: center; flex: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.app-icon { width: 34px; height: 34px; flex: none; }
+.top-title { min-width: 0; flex: 1 1 260px; }
+.top > .seg, .top > .check, .top > .btn { flex-shrink: 0; }
+.top-title .eyebrow { margin: 0; font-size: 12px; color: var(--faint); line-height: 1.3; }
+.top-title h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-title h1 span { color: var(--sub); font-weight: 500; margin-left: 8px; font-size: 13px; }
+.check { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 999px; border: 0; background: var(--ok-soft); color: var(--ok); font-size: 12.5px; font-weight: 600; white-space: nowrap; transition: transform 120ms var(--ease-out); }
+.check:active { transform: scale(0.97); }
+.check.bad { background: var(--danger-soft); color: var(--danger); }
+.check i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: var(--r-s); padding: 8px 15px; font-size: 14px; font-weight: 600; white-space: nowrap; user-select: none;
+  transition: transform 120ms var(--ease-out), background 120ms ease, opacity 120ms ease; }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.quiet { background: var(--sunken); color: var(--text); }
+@media (hover: hover) {
+  .btn.primary:hover:not(:disabled) { background: var(--accent-press); }
+  .btn.quiet:hover:not(:disabled) { background: var(--line-strong); }
+}
+a.btn { text-decoration: none; }
+.btn .num { min-width: 20px; padding: 0 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.22); font-size: 11.5px; line-height: 19px; text-align: center; }
+.seg { display: inline-flex; background: var(--sunken); border-radius: 10px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; border-radius: 8px; padding: 5px 11px; font-size: 12.5px; font-weight: 600; color: var(--sub); line-height: 1.35; white-space: nowrap; transition: background 120ms ease, color 120ms ease; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(22, 23, 46, 0.12); }
+.theme-seg button { padding: 5px 9px; font-size: 12px; }
+
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
+.stage { display: grid; grid-template-rows: auto auto minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); min-height: 0; min-width: 0; }
+
+/* ── ビューア（映像の枠は常に暗い） ── */
+.viewer { padding: 16px 20px 12px; }
+.viewer-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.viewer-head .cue-no { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.viewer-head .cue-time { font-size: 13px; color: var(--sub); }
+.viewer-head .spacer { flex: 1; }
+.icon-btn { width: 32px; height: 30px; border-radius: var(--r-s); border: 0; background: var(--sunken); display: inline-grid; place-items: center; color: var(--sub); transition: transform 120ms var(--ease-out), background 120ms ease; }
+.icon-btn:active { transform: scale(0.95); }
+@media (hover: hover) { .icon-btn:hover { color: var(--text); background: var(--line-strong); } }
+.stage-box { height: clamp(190px, 32vh, 400px); display: flex; justify-content: center; }
+.frame { position: relative; height: 100%; aspect-ratio: 16 / 9; max-width: 100%; border-radius: var(--r); overflow: hidden; container-type: size;
+  background: radial-gradient(120% 90% at 50% 30%, #2a2b45 0%, #0d0e1a 72%); box-shadow: 0 0 0 1px var(--line), var(--shadow); }
+.frame.vertical { aspect-ratio: 9 / 16; }
+.frame .safe { position: absolute; inset: 5%; border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 3px; pointer-events: none; }
+.frame .tag { position: absolute; top: 3.2%; left: 3.6%; font-size: max(10px, 2.3cqh); color: rgba(255, 255, 255, 0.55); font-weight: 600; letter-spacing: 0.04em; }
+.frame .sub { position: absolute; left: 5%; right: 5%; bottom: 8%; text-align: center; color: #fff; font-weight: 600; line-height: 1.32; white-space: pre-line; overflow-wrap: anywhere;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 2px 3px rgba(0, 0, 0, 0.9); }
+.frame .sub.before { color: #ffd6d2; }
+.readout { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12.5px; color: var(--sub); }
+.readout b { color: var(--text); font-weight: 600; }
+.readout .over b { color: var(--warn); }
+.readout .hint { margin-left: auto; color: var(--faint); }
+
+.fontbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; font-size: 12.5px; color: var(--sub); }
+.fontbar input[type=range] { width: 200px; accent-color: var(--accent); }
+.fontbar .tc { color: var(--text); font-weight: 600; }
+.fontbar .btn { padding: 5px 12px; font-size: 12.5px; }
+.fontnote { color: var(--faint); }
+
+/* ── タイムライン ── */
+.timeline { padding: 8px 20px 14px; border-top: 1px solid var(--line); }
+.tl-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 12px; color: var(--sub); margin-bottom: 6px; }
+.tl-head strong { color: var(--text); font-weight: 700; font-size: 13px; }
+.key { display: inline-flex; align-items: center; gap: 5px; }
+.key i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.ruler { position: relative; height: 15px; margin-bottom: 3px; }
+.ruler span { position: absolute; top: 0; transform: translateX(-50%); font-size: 10.5px; color: var(--faint); }
+.ruler span:first-child { transform: none; }
+.track { position: relative; height: 46px; border-radius: var(--r-s); background: var(--sunken); }
+.clip { position: absolute; top: 7px; bottom: 7px; min-width: 3px; border-radius: 4px; border: 0; padding: 0; background: var(--c-same); }
+@media (hover: hover) { .clip:hover { filter: brightness(1.08) saturate(1.1); } }
+.clip.fix { background: var(--c-fix); }
+.clip.lb { background: var(--c-lb); }
+.clip.review { background: var(--c-review); }
+.clip.stop { background: var(--c-stop); }
+.clip.long { background: repeating-linear-gradient(135deg, var(--c-long) 0 4px, var(--c-long-2) 4px 8px); }
+.clip.fast { overflow: hidden; }
+.clip.fast::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 7px; background: repeating-linear-gradient(135deg, var(--c-long) 0 3px, var(--c-long-2) 3px 6px); }
+.clip.mine { background: var(--c-mine); }
+.clip[aria-current="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); z-index: 2; }
+.playhead { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); border-radius: 1px; pointer-events: none; z-index: 3; }
+
+/* ── 一覧 ── */
+.index { display: grid; grid-template-rows: auto minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); min-height: 0; border-top: 1px solid var(--line); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 20px; }
+.chip { border: 1px solid var(--line-strong); background: transparent; border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--sub); white-space: nowrap;
+  transition: transform 120ms var(--ease-out), background 120ms ease, color 120ms ease, border-color 120ms ease; }
+@media (hover: hover) { .chip:hover { color: var(--text); border-color: var(--sub); } }
+.chip:active { transform: scale(0.96); }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); font-weight: 600; }
+.chip .n { margin-left: 6px; font-size: 12px; font-variant-numeric: tabular-nums; opacity: 0.75; }
+.rows { overflow: auto; min-height: 0; margin: 0 20px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); box-shadow: var(--shadow); }
+.cols, .row { display: grid; grid-template-columns: 44px 92px minmax(0, 1fr) minmax(0, 1fr) 112px; gap: 14px; align-items: start; }
+.cols { position: sticky; top: 0; z-index: 1; padding: 9px 18px; background: var(--surface); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--faint); font-weight: 600; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li + li { border-top: 1px solid var(--line); }
+.row { width: 100%; padding: 12px 18px; border: 0; background: transparent; text-align: left; font-size: 14px; transition: background 120ms ease; }
+@media (hover: hover) { .row:hover { background: var(--panel); } }
+.row[aria-selected="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.row .no { font-weight: 700; }
+.row .time { font-size: 12px; color: var(--sub); padding-top: 2px; }
+.row .txt { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.row .txt.same { color: var(--faint); }
+.status { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--sub); padding-top: 2px; }
+.status span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.status i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.empty { padding: 40px 18px; color: var(--faint); text-align: center; font-size: 14px; margin: 0; }
+ins { background: var(--ok-soft); color: var(--ok); text-decoration: none; border-radius: 4px; padding: 0 2px; font-weight: 600; }
+del { background: var(--danger-soft); color: var(--danger); text-decoration: line-through; border-radius: 4px; padding: 0 2px; }
+.eol { color: var(--faint); font-size: 0.75em; padding-left: 2px; }
+
+/* ── 修正パネル ── */
+.inspector { overflow: auto; min-height: 0; background: var(--panel); border-left: 1px solid var(--line); }
+.sec { padding: 18px 20px; }
+.sec + .sec { border-top: 1px solid var(--line); }
+.sec-title { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: var(--sub); }
+.item { padding: 14px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.item + .item { margin-top: 10px; }
+.item-head { display: flex; align-items: center; gap: 8px; }
+.item-type { font-size: 13px; font-weight: 700; }
+.item-id { font-size: 11.5px; color: var(--faint); }
+.state { margin-left: auto; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-align: right; }
+.state i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.state.on { color: var(--ok); }
+.state.off { color: var(--sub); }
+.state.wait { color: var(--warn); }
+.diffline { margin: 10px 0 8px; font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
+.diffline .arrow { color: var(--faint); margin: 0 6px; }
+.why { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--sub); }
+.why b { color: var(--text); font-weight: 600; margin-right: 6px; }
+.why + .why { margin-top: 4px; }
+.banner { margin: 10px 0 0; padding: 9px 12px; border-radius: var(--r); font-size: 13px; line-height: 1.55; background: var(--warn-soft); color: var(--warn); }
+.banner.err { background: var(--danger-soft); color: var(--danger); }
+.banner.long { background: var(--caution-soft); color: var(--caution); }
+.decide { display: flex; margin-top: 12px; }
+.decide .seg { width: 100%; }
+.decide .seg button { flex: 1; padding: 7px 8px; font-size: 13px; }
+.decide .seg button.yes[aria-pressed="true"] { background: #248a3d; color: #fff; box-shadow: none; }
+.decide .seg button:disabled { opacity: 0.4; cursor: default; }
+.field { width: 100%; margin-top: 10px; background: var(--sunken); border: 1px solid transparent; border-radius: var(--r-s); padding: 9px 12px; outline: none; font-size: 14px; line-height: 1.55;
+  transition: border-color 120ms ease, background 120ms ease; }
+.field:focus { border-color: var(--accent); background: var(--surface); }
+textarea.field { min-height: 76px; resize: vertical; }
+.field-msg { margin: 6px 0 0; font-size: 12.5px; color: var(--danger); }
+.field-msg:empty { display: none; }
+details.manual { box-shadow: none; background: transparent; border-style: dashed; }
+details.manual[open] { background: var(--surface); border-style: solid; }
+details.manual summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--accent); list-style: none; }
+details.manual summary::-webkit-details-marker { display: none; }
+details.manual summary::before { content: "＋ "; }
+details.manual[open] summary::before { content: "− "; }
+.row-actions { display: flex; gap: 8px; margin-top: 10px; }
+.none { font-size: 13px; color: var(--faint); margin: 0 0 10px; }
+.info p { font-size: 12.5px; color: var(--sub); line-height: 1.7; margin: 0 0 12px; }
+.info details { font-size: 12.5px; color: var(--sub); }
+.info details + details { margin-top: 8px; }
+.info summary { cursor: pointer; font-weight: 600; color: var(--text); font-size: 13px; }
+.info ul { margin: 6px 0 0; padding-left: 1.1em; line-height: 1.75; }
+.info .ng { color: var(--danger); font-weight: 600; }
+.maker { margin: 18px 0 0; font-size: 12px; color: var(--faint); line-height: 1.8; }
+.maker a { color: var(--sub); text-underline-offset: 3px; }
+.linkish { margin-top: 14px; border: 0; background: none; padding: 0; color: var(--sub); font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; }
+
+dialog { border: 0; border-radius: var(--r-l); padding: 0; max-width: 540px; width: calc(100% - 32px); background: var(--surface); color: var(--text); box-shadow: 0 24px 64px rgba(22, 23, 46, 0.28); }
+dialog::backdrop { background: rgba(20, 21, 42, 0.45); }
+.dlg { padding: 24px; }
+.dlg h2 { margin: 0 0 6px; font-size: 19px; letter-spacing: -0.01em; }
+.dlg p, .dlg li { font-size: 14px; line-height: 1.7; color: var(--sub); }
+.dlg li b { color: var(--text); }
+.dlg ol { padding-left: 1.2em; margin: 12px 0 0; }
+.dlg pre { margin: 8px 0 0; padding: 10px 12px; border-radius: var(--r-s); background: var(--sunken); font-size: 11.5px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text); }
+.dlg-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); padding: 9px 16px; border-radius: 999px; background: var(--text); color: var(--bg); font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 160ms var(--ease-out); z-index: 20; }
+.toast.show { opacity: 1; }
+
+@media (max-width: 1100px) {
+  .app { height: auto; }
+  .work { grid-template-columns: minmax(0, 1fr); }
+  .rows { overflow: visible; }
+  .inspector { overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 720px) {
+  .top { flex-wrap: wrap; padding: 10px 14px; }
+  .top-title { flex-basis: calc(100% - 50px); }
+  .viewer, .timeline { padding-left: 14px; padding-right: 14px; }
+  .viewer-head { flex-wrap: wrap; }
+  .stage-box { height: auto; }
+  .frame { height: auto; width: 100%; }
+  .frame.vertical { width: 60%; }
+  .readout .hint { display: none; }
+  .tabs { padding: 12px 14px; }
+  .rows { margin: 0 14px 14px; }
+  .cols { display: none; }
+  .row { grid-template-columns: 44px minmax(0, 1fr); gap: 4px 10px; padding: 12px 14px; }
+  .row .time { grid-column: 2; grid-row: 1; }
+  .row .txt, .row .status { grid-column: 2; }
+  .row .txt.before::before { content: "修正前　"; color: var(--faint); font-size: 12px; }
+  .row .txt.after::before { content: "修正後　"; color: var(--faint); font-size: 12px; }
+  .status { flex-direction: row; flex-wrap: wrap; gap: 4px 10px; }
+  .sec { padding: 16px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <img class="app-icon" id="appIcon" src="/assets/icon/icon_128.png" width="34" height="34" alt="" onerror="this.style.display='none'">
+    <div class="top-title">
+      <p class="eyebrow">字幕の確認</p>
+      <h1 id="title">—</h1>
+    </div>
+    <button id="checkPill" class="check" type="button"><i></i><span></span></button>
+    <div class="seg theme-seg" role="group" aria-label="配色">
+      <button type="button" data-theme-set="auto">自動</button>
+      <button type="button" data-theme-set="light">ライト</button>
+      <button type="button" data-theme-set="dark">ダーク</button>
+    </div>
+    <a id="homeBtn" class="btn quiet" href="/" hidden>別のSRTを開く</a>
+    <button id="saveBtn" class="btn primary" type="button" disabled><span id="saveLabel">決定を保存</span> <span id="saveCount" class="num">0</span></button>
+    <a id="downloadBtn" class="btn quiet" hidden>SRTを書き出す</a>
+    <a id="downloadUtf8Btn" class="btn quiet" hidden title="元のSRTはShift_JISです。YouTubeなど、UTF-8のSRTを求める場所に上げるときはこちら">UTF-8で書き出す</a>
+  </header>
+
+  <div class="work">
+    <section class="stage" aria-label="字幕のプレビューと一覧">
+      <div class="viewer">
+        <div class="viewer-head">
+          <span id="cueNo" class="cue-no tc">#—</span>
+          <span id="cueTime" class="cue-time tc"></span>
+          <span class="spacer"></span>
+          <div class="seg" role="group" aria-label="表示する版">
+            <button type="button" id="showAfter" aria-pressed="true">修正後</button>
+            <button type="button" id="showBefore" aria-pressed="false">修正前</button>
+          </div>
+          <button type="button" class="icon-btn" id="prevBtn" aria-label="前の字幕"><svg viewBox="0 0 12 12"><path d="M7.5 2.5 4 6l3.5 3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="icon-btn" id="nextBtn" aria-label="次の字幕"><svg viewBox="0 0 12 12"><path d="M4.5 2.5 8 6 4.5 9.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="stage-box">
+          <div id="frame" class="frame" role="img" aria-label="">
+            <div class="safe" aria-hidden="true"></div>
+            <div id="frameTag" class="tag" aria-hidden="true"></div>
+            <div id="sub" class="sub"></div>
+          </div>
+        </div>
+        <div id="readout" class="readout"></div>
+        <div class="fontbar">
+          <label for="fontRange">文字の大きさ</label>
+          <input type="range" id="fontRange">
+          <span id="fontVal" class="tc"></span>
+          <button type="button" class="btn primary" id="relayoutBtn" hidden>この大きさで改行し直す</button>
+          <span id="fontNote" class="fontnote"></span>
+        </div>
+        <div class="fontbar">
+          <span id="lblViewCps">見やすさの目安</span>
+          <div class="seg" role="group" aria-labelledby="lblViewCps" id="cpsSeg">
+            <button type="button" data-cps="4">1秒4字</button>
+            <button type="button" data-cps="6">1秒6字</button>
+            <button type="button" data-cps="8">1秒8字</button>
+            <button type="button" data-cps="0">知らせない</button>
+          </div>
+          <span class="fontnote">目安より速い字幕に印を付けるだけで、字幕も時刻も変えません</span>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="tl-head">
+          <strong>タイムライン</strong>
+          <span class="key"><i style="background:var(--c-fix)"></i>文字の修正</span>
+          <span class="key"><i style="background:var(--c-lb)"></i>改行・句読点（自動）</span>
+          <span class="key"><i style="background:var(--c-review)"></i>要確認</span>
+          <span class="key"><i style="background:var(--c-stop)"></i>止まった候補</span>
+          <span class="key"><i style="background:var(--c-long)"></i>行の上限超え</span>
+          <span class="key"><i style="background:repeating-linear-gradient(135deg, var(--c-long) 0 2px, var(--c-long-2) 2px 4px)"></i>目安より速い（下の縞）</span>
+          <span class="key"><i style="background:var(--c-mine)"></i>手動修正</span>
+          <span class="key"><i style="background:var(--c-same)"></i>変更なし</span>
+        </div>
+        <div id="ruler" class="ruler tc" aria-hidden="true"></div>
+        <div id="track" class="track" role="group" aria-label="字幕の位置"></div>
+      </div>
+
+      <div class="index">
+        <div id="tabs" class="tabs" role="group" aria-label="表示する字幕"></div>
+        <div class="rows">
+          <div class="cols" aria-hidden="true"><span>番号</span><span>開始</span><span>修正前</span><span>修正後</span><span>状態</span></div>
+          <ol id="list" class="list" aria-label="字幕"></ol>
+          <p id="empty" class="empty" hidden>この条件の字幕はありません。</p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="inspector" aria-label="選んだ字幕の修正">
+      <div class="sec">
+        <h2 class="sec-title">この字幕の修正</h2>
+        <div id="items"></div>
+      </div>
+      <div class="sec info">
+        <h2 class="sec-title">この画面について</h2>
+        <p>この画面はSRTを書き換えません。採用・見送りの決定は「決定を保存」で候補ファイルにし、スクリプトで適用し直すと修正版に反映されます。←→キーで前後の字幕、Bキーで修正前・修正後を切り替えます。</p>
+        <details id="verifyDetails"><summary>機械検査の結果</summary><ul id="verifyList"></ul></details>
+        <details><summary>この画面と検査で確認していないこと</summary><ul id="scopeList"></ul></details>
+        <button id="resetBtn" class="linkish" type="button">この画面での決定をすべて元に戻す</button>
+        <p class="maker">字幕ととのえ（MIT License）作者：LULU Apps<br>
+          <a href="https://luluapps.booth.pm/" target="_blank" rel="noopener">ほかのツール（BOOTH）</a>　<a href="https://note.com/luluapps" target="_blank" rel="noopener">開発や日々のこと（note）</a></p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<dialog id="saveDialog" aria-labelledby="dlgTitle">
+  <div class="dlg">
+    <h2 id="dlgTitle">決定を保存する</h2>
+    <p id="dlgSummary"></p>
+    <ol>
+      <li>「候補ファイルを保存」を押し、元のSRTと同じフォルダに保存します。</li>
+      <li>Claude Code や Codex に「<b>確認画面で保存した候補で、字幕を適用し直して</b>」と頼みます。自分で実行する場合は次のコマンドです。
+        <pre id="dlgCommand"></pre>
+      </li>
+    </ol>
+    <div class="dlg-actions">
+      <button class="btn quiet" type="button" id="copyCmd">コマンドをコピー</button>
+      <button class="btn quiet" type="button" id="dlgClose">閉じる</button>
+      <button class="btn primary" type="button" id="dlgSave">候補ファイルを保存</button>
+    </div>
+  </div>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script id="data" type="application/json">/*__DATA__*/null</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById("data").textContent);
+const S = D.settings;
+const STORE = "jsp-review:" + D.source_sha256 + ":" + (D.revision || "");
+const APP = window.JSP_APP || null;  // アプリ（app.py）から開いたとき
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k === "class") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c !== null && c !== undefined && c !== "") n.append(c);
+  return n;
+};
+
+// ── 決定の状態（このブラウザにだけ保存。保存できない環境でも使える） ──
+let state = { decisions: {}, manual: {}, linebreak: {} };
+try { const s = JSON.parse(localStorage.getItem(STORE) || "null"); if (s && s.decisions) state = s; } catch (e) {}
+const persist = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+
+const candsByCue = new Map();
+for (const c of D.candidates) {
+  const i = Number(c.cand.index);
+  if (!candsByCue.has(i)) candsByCue.set(i, []);
+  candsByCue.get(i).push(c);
+}
+const cueByIndex = new Map(D.cues.map((c) => [c.index, c]));
+const defaultDecision = (c) => c.state === "applied" ? "accept"
+  : (c.state === "review" && c.cand.decision !== "rejected") ? "pending" : "reject";
+const decisionOf = (c) => (state.decisions[c.key] && state.decisions[c.key].d) || defaultDecision(c);
+const proposedOf = (c) => { const s = state.decisions[c.key]; return s && typeof s.proposed === "string" ? s.proposed : (c.cand.proposed || ""); };
+const canAccept = (c) => c.state === "applied" || c.state === "review" || (c.state === "refused" && c.approvable);
+function changedCount() {
+  let n = 0;
+  for (const c of D.candidates) { const d = decisionOf(c); if (d !== defaultDecision(c) && d !== "pending") n++; }
+  return n + Object.keys(state.manual).length + Object.keys(state.linebreak).length;
+}
+
+// ── 差分と文字数 ─────────────────────────────────────────────
+function diff(a, b) {
+  const A = Array.from(a), B = Array.from(b), n = A.length, m = B.length;
+  if (n * m > 250000) return [["del", a], ["ins", b]];
+  const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const ops = []; let i = 0, j = 0;
+  const push = (t, ch) => { const l = ops[ops.length - 1]; if (l && l[0] === t) l[1] += ch; else ops.push([t, ch]); };
+  while (i < n && j < m) {
+    if (A[i] === B[j]) { push("eq", A[i]); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { push("del", A[i]); i++; }
+    else { push("ins", B[j]); j++; }
+  }
+  while (i < n) push("del", A[i++]);
+  while (j < m) push("ins", B[j++]);
+  return ops;
+}
+// SRTの改行は「↵」で示す（画面の折り返しと区別するため）
+function withBreaks(node, s) {
+  s.split("\n").forEach((p, i) => {
+    if (i > 0) node.append(el("span", { class: "eol", "aria-hidden": "true", text: "↵" }), "\n");
+    if (p) node.append(p);
+  });
+  return node;
+}
+function renderDiff(node, before, after, side) {
+  for (const [t, s] of diff(before, after)) {
+    if (t === "eq") { withBreaks(node, s); continue; }
+    if ((t === "del") === (side === "after")) continue;
+    if (/^\s+$/.test(s)) { withBreaks(node, s); continue; }  // 改行・空白だけの違いは色を付けない
+    node.append(el(t, { text: s.replace(/\n/g, "") }));
+  }
+  return node;
+}
+const wideRe = /[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦　-〿‘-”…※←-⇿①-⓿■-➿§¨°±´¶×÷]/u;
+// 見やすさの目安（1秒に読む字数）。ルールではなく目安なので、確認画面でその場で切り替えられる。0 は知らせない
+// 作業ごとに覚える（ファイル名だけだと、同じ名前のSRTの別の作業にも引き継がれてしまう）
+const CPS_KEY = "jsp-view-cps:" + (APP ? APP.job : D.source_sha256 + ":" + (D.revision || ""));
+let viewCps = Number(S.max_cps) || 0;
+try { const v = sessionStorage.getItem(CPS_KEY); if (v !== null) viewCps = Number(v) || 0; } catch (e) {}
+const cpsOf = (cue, lines) => cue.duration > 0 ? width((lines || currentAfter(cue)).join("").replace(/\s+/g, "")) / cue.duration : null;
+const isFast = (cue) => { const c = cpsOf(cue); return !!viewCps && c !== null && c > viewCps; };
+function width(s) {
+  let w = 0;
+  for (const ch of s.replace(/<[^>]*>|\{\\[^}]*\}/g, "")) {
+    const cp = ch.codePointAt(0);
+    if (cp >= 0x300 && cp <= 0x36F) continue;
+    w += (wideRe.test(ch) || cp > 0xFFFF) ? 1 : Number(S.halfwidth_weight);
+  }
+  return w;
+}
+const fmt = (x) => (Math.round(x * 10) / 10).toString();
+const toSec = (t) => { const m = t.match(/(\d+):(\d+):(\d+)[,.](\d+)/); return m ? (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3]) + (+m[4].padEnd(3, "0")) / 1000 : 0; };
+
+// ── 字幕の状態 ───────────────────────────────────────────────
+function currentAfter(cue) {
+  if (state.manual[cue.index] !== undefined) return state.manual[cue.index].split("\n");
+  if (state.linebreak[cue.index]) return cue.before;
+  return cue.after;
+}
+const STATUS = {
+  mine: ["手動修正", "var(--c-mine)"], fix: ["修正", "var(--c-fix)"], lb: ["改行だけ", "var(--c-lb)"],
+  review: ["要確認", "var(--c-review)"], stop: ["止まった候補", "var(--c-stop)"],
+  long: ["目安より速い", "var(--c-long)"], over: ["上限超え", "var(--c-long)"], struct: ["構造の注意", "var(--c-stop)"],
+};
+function tags(cue) {
+  const cs = candsByCue.get(cue.index) || [];
+  const t = [];
+  if (state.manual[cue.index] !== undefined) t.push("mine");
+  else if (cs.some((c) => decisionOf(c) === "accept")) t.push("fix");
+  else if (cue.linebreak_only && !state.linebreak[cue.index]) t.push("lb");
+  if (cs.some((c) => c.state === "review" && decisionOf(c) === "pending")) t.push("review");
+  if (cs.some((c) => c.state === "refused" && decisionOf(c) !== "accept")) t.push("stop");
+  if (isFast(cue)) t.push("long");
+  if (cue.flags.some((f) => f.kind === "収まらない")) t.push("over");
+  if (cue.flags.some((f) => f.kind === "構造")) t.push("struct");
+  return t;
+}
+function clipClass(cue) {
+  const t = tags(cue);
+  const fast = t.includes("long") ? " fast" : "";
+  for (const [k, c] of [["stop", "stop"], ["struct", "stop"], ["review", "review"], ["over", "long"], ["mine", "mine"], ["fix", "fix"], ["lb", "lb"]])
+    if (t.includes(k)) return c + fast;
+  return fast.trim();
+}
+
+const FILTERS = [
+  ["attention", "確認が必要", (c) => tags(c).some((k) => ["review", "stop", "over", "struct"].includes(k))],
+  ["changed", "変更した字幕", (c) => currentAfter(c).join("\n") !== c.before.join("\n")],
+  ["fast", "目安より速い", (c) => tags(c).includes("long")],
+  ["stopped", "止まった候補", (c) => (candsByCue.get(c.index) || []).some((x) => x.state === "refused")],
+  ["all", "すべて", () => true],
+];
+let filter = D.cues.some(FILTERS[0][2]) ? "attention" : "changed";
+let selected = null;
+let side = "after";
+const visible = () => D.cues.filter(FILTERS.find((f) => f[0] === filter)[2]);
+
+const PRESET_NAMES = { genba: "現場基準", standard: "標準", safe: "読みやすさ優先", vertical: "縦型" };
+// ── 上部 ─────────────────────────────────────────────────────
+function renderTop() {
+  $("title").replaceChildren(D.file, el("span", { text:
+    `${D.cues.length}件・最大${S.max_lines}行・1行${S.max_chars_per_line}字・${viewCps ? `目安 1秒${viewCps}字` : "読む速さは知らせない"}${D.preset && !S.font_px && PRESET_NAMES[D.preset] ? "（" + PRESET_NAMES[D.preset] + "）" : ""}${S.font_px ? `・文字${S.font_px}px（${VIDEO_W}×${VIDEO_H}）` : ""}${S.punctuation === "telop" ? "・句読点を外す" : ""}${D.glossary ? "・辞書 " + D.glossary : ""}` }));
+  const p = $("checkPill");
+  p.classList.toggle("bad", !D.verify.ok);
+  p.querySelector("span").textContent = D.verify.ok ? "番号・時刻は原本と一致" : "機械検査で不一致";
+  p.onclick = () => { $("verifyDetails").open = true; $("verifyDetails").scrollIntoView({ behavior: "smooth", block: "center" }); };
+  $("verifyList").replaceChildren(...D.verify.checks.map((c) => el("li", { class: c.ok ? "" : "ng", text: `${c.ok ? "OK" : "NG"}　${c.name}${c.detail ? " — " + c.detail : ""}` })));
+  $("scopeList").replaceChildren(...(D.verify.ok ? [] : [el("li", { class: "ng", text: "機械検査で不一致があるため、修正版は使わないでください。" })]),
+    ...D.out_of_scope.map((x) => el("li", { text: x })));
+}
+function renderSaveBtn() {
+  const n = changedCount();
+  $("saveCount").textContent = String(n);
+  $("saveBtn").disabled = n === 0;
+  $("saveBtn").setAttribute("aria-label", `決定を保存（変更 ${n}件）`);
+}
+
+// ── 文字の大きさ ─────────────────────────────────────────────
+// 動画のサイズと文字の大きさ（px）が分かっていれば、その比率でビューアに表示する。
+const VIDEO_W = Number(S.video_width) || (D.preset === "vertical" ? 1080 : 1920);
+const VIDEO_H = Number(S.video_height) || (VIDEO_W === 1080 && D.preset === "vertical" ? 1920 : Math.round(VIDEO_W * 9 / 16));
+const BASE_FONT = Number(S.font_px) || Math.round(VIDEO_W * 0.9 / Number(S.max_chars_per_line));
+let viewFont = BASE_FONT;
+const perLine = (font) => Math.max(4, Math.floor(VIDEO_W * 0.9 / font));
+function renderFontbar() {
+  const r = $("fontRange");
+  r.min = String(Math.min(Math.round(VIDEO_W / 64), viewFont)); r.max = String(Math.max(Math.round(VIDEO_W / 9.6), viewFont)); r.step = "1";
+  r.value = String(viewFont);
+  $("fontVal").textContent = `${viewFont}px（1行に約${perLine(viewFont)}字）`;
+  const changed = perLine(viewFont) !== Number(S.max_chars_per_line);
+  $("relayoutBtn").hidden = !(APP && changed);
+  $("fontNote").textContent = !changed ? `今の改行は1行${S.max_chars_per_line}字で作っています。`
+    : APP ? `今の改行は1行${S.max_chars_per_line}字。この大きさでは1行${perLine(viewFont)}字になります。`
+    : `改行を合わせるには、スクリプトを --video-size ${VIDEO_W}x${VIDEO_H} --font-size ${viewFont} で実行し直します。`;
+}
+$("fontRange").addEventListener("input", (e) => { viewFont = Number(e.target.value); renderFontbar(); renderViewer(); });
+$("relayoutBtn").addEventListener("click", async () => {
+  const btn = $("relayoutBtn"); btn.disabled = true; btn.textContent = "改行し直しています…";
+  try {
+    const res = await fetch(`/api/jobs/${APP.job}/layout`, { method: "POST",
+      headers: { "Content-Type": "application/json", "X-Token": APP.token }, body: JSON.stringify({ font_px: viewFont }) });
+    const r = await res.json().catch(() => ({}));
+    if (!res.ok || !r.ok) throw new Error(r.error || "改行し直せませんでした");
+    try { sessionStorage.setItem("jsp-toast", `文字${viewFont}px（1行${perLine(viewFont)}字）で改行し直しました`); } catch (e) {}
+    location.reload();
+  } catch (e) { btn.disabled = false; btn.textContent = "この大きさで改行し直す"; toast(e.message); }
+});
+
+// ── ビューア ─────────────────────────────────────────────────
+function renderViewer() {
+  const cue = cueByIndex.get(selected);
+  const frame = $("frame");
+  frame.classList.toggle("vertical", VIDEO_H > VIDEO_W);
+  if (!cue) { $("cueNo").textContent = "#—"; $("cueTime").textContent = ""; $("sub").textContent = ""; $("readout").replaceChildren(); return; }
+  const lines = side === "after" ? currentAfter(cue) : cue.before;
+  const maxW = Math.max(0, ...lines.map(width));
+  const chars = width(lines.join("").replace(/\s+/g, ""));
+  const cps = cpsOf(cue, lines);
+  $("cueNo").textContent = "#" + cue.index;
+  $("cueTime").textContent = `${cue.start} → ${cue.end}　${fmt(cue.duration)}秒`;
+  const sub = $("sub");
+  sub.textContent = lines.join("\n");
+  sub.classList.toggle("before", side === "before");
+  // 動画の横幅に対する文字の大きさの比率で表示する（フォントの実際の幅とは少し違う、目安）
+  sub.style.fontSize = (viewFont / VIDEO_W * 100) + "cqw";
+  $("frameTag").textContent = side === "after" ? "修正後" : "修正前";
+  frame.setAttribute("aria-label", `${side === "after" ? "修正後" : "修正前"}の字幕：${lines.join("／")}`);
+  $("showAfter").setAttribute("aria-pressed", String(side === "after"));
+  $("showBefore").setAttribute("aria-pressed", String(side === "before"));
+  const overLine = maxW > S.max_chars_per_line || lines.length > S.max_lines;
+  const overCps = !!viewCps && cps !== null && cps > viewCps;
+  $("readout").replaceChildren(
+    el("span", { class: overLine ? "over" : "" }, "いちばん長い行 ", el("b", { text: `${fmt(maxW)}字` }), ` / ${S.max_chars_per_line}字　`, el("b", { text: `${lines.length}行` }), ` / ${S.max_lines}行`),
+    el("span", { class: overCps ? "over" : "" }, "1秒あたり ", el("b", { text: cps === null ? "—" : `${fmt(cps)}字` }), viewCps ? ` / 目安 ${viewCps}字` : ""),
+    el("span", { class: "hint", text: "文字の大きさは目安です。実際の見え方は編集ソフトで確かめてください" }),
+  );
+}
+
+// ── タイムライン ─────────────────────────────────────────────
+function renderTimeline() {
+  const total = Math.max(1, ...D.cues.map((c) => toSec(c.end)));
+  const track = $("track"); track.replaceChildren();
+  for (const cue of D.cues) {
+    const s = toSec(cue.start), e = toSec(cue.end);
+    track.append(el("button", {
+      class: "clip " + clipClass(cue), type: "button", "aria-current": String(cue.index === selected),
+      "aria-label": `#${cue.index} ${cue.start}`, title: `#${cue.index}　${currentAfter(cue).join(" ")}`,
+      style: `left:${(s / total) * 100}%;width:calc(${((e - s) / total) * 100}% - 1px)`,
+      onclick: () => { if (!visible().some((c) => c.index === cue.index)) { filter = "all"; renderTabs(); renderList(); } select(cue.index, true); },
+    }));
+  }
+  const cur = cueByIndex.get(selected);
+  if (cur) track.append(el("div", { class: "playhead", style: `left:${(toSec(cur.start) / total) * 100}%` }));
+  // 目盛りの数は画面幅に合わせる（ラベルが重ならないよう、約72pxに1つ）
+  const maxTicks = Math.max(2, Math.floor((track.clientWidth || 600) / 72));
+  const stepSec = [5, 10, 15, 30, 60, 120, 300, 600, 1200, 1800].find((x) => total / x <= maxTicks) || 3600;
+  const ruler = $("ruler"); ruler.replaceChildren();
+  for (let t = 0; t <= total; t += stepSec) {
+    const m = Math.floor(t / 60), s = Math.floor(t % 60);
+    ruler.append(el("span", { style: `left:${(t / total) * 100}%`, text: `${m}:${String(s).padStart(2, "0")}` }));
+  }
+}
+
+// ── 一覧 ─────────────────────────────────────────────────────
+function renderTabs() {
+  // 「知らせない」のときは「目安より速い」の絞り込みを出さない
+  if (filter === "fast" && !viewCps) filter = "attention";
+  $("tabs").replaceChildren(...FILTERS.filter(([key]) => key !== "fast" || viewCps).map(([key, label, fn]) => el("button", {
+    class: "chip", type: "button", "aria-pressed": String(filter === key),
+    onclick: () => { filter = key; renderTabs(); renderList(); const v = visible(); if (v.length && !v.some((c) => c.index === selected)) select(v[0].index); },
+  }, label, el("span", { class: "n", text: String(D.cues.filter(fn).length) }))));
+}
+function renderList() {
+  const list = $("list"); list.replaceChildren();
+  const cues = visible();
+  $("empty").hidden = cues.length > 0;
+  for (const cue of cues) {
+    const before = cue.before.join("\n"), after = currentAfter(cue).join("\n");
+    const same = before === after;
+    list.append(el("li", {}, el("button", {
+      class: "row", type: "button", "data-index": cue.index, "aria-selected": String(cue.index === selected),
+      onclick: () => select(cue.index),
+    },
+      el("span", { class: "no tc", text: "#" + cue.index }),
+      el("span", { class: "time tc", text: cue.start.slice(0, 8) }),
+      same ? withBreaks(el("span", { class: "txt before" }), before) : renderDiff(el("span", { class: "txt before" }), before, after, "before"),
+      same ? el("span", { class: "txt after same", text: "変更なし" }) : renderDiff(el("span", { class: "txt after" }), before, after, "after"),
+      el("span", { class: "status" }, tags(cue).map((k) => el("span", {}, el("i", { style: `background:${STATUS[k][1]}` }), k === "lb" ? cue.script_label : STATUS[k][0]))),
+    )));
+  }
+}
+
+function select(index, scroll) {
+  selected = index;
+  for (const r of document.querySelectorAll(".row")) r.setAttribute("aria-selected", String(Number(r.dataset.index) === index));
+  if (scroll) { const r = document.querySelector(`.row[data-index="${index}"]`); if (r) r.scrollIntoView({ block: "nearest" }); }
+  renderViewer(); renderTimeline(); renderItems();
+}
+function step(dir) {
+  const cues = visible(); if (!cues.length) return;
+  const i = cues.findIndex((c) => c.index === selected);
+  const next = cues[Math.max(0, Math.min(cues.length - 1, (i < 0 ? 0 : i + dir)))];
+  select(next.index, true);
+}
+
+// ── インスペクタ ─────────────────────────────────────────────
+function stateBadge(c) {
+  const d = decisionOf(c), def = defaultDecision(c);
+  if (d === "pending") return el("span", { class: "state wait" }, el("i"), "未決定");
+  const label = d === "accept" ? (c.state === "applied" ? "適用済み" : "採用（保存後に反映）") : (c.state === "applied" ? "見送り（保存後に元へ戻る）" : "適用しない");
+  return el("span", { class: "state " + (d === "accept" ? "on" : "off") }, el("i"), label + (d !== def ? "・変更" : ""));
+}
+function decide(c, onChange) {
+  const d = decisionOf(c);
+  return el("div", { class: "decide" }, el("div", { class: "seg", role: "group", "aria-label": "この修正の扱い" },
+    el("button", { type: "button", class: "yes", "aria-pressed": String(d === "accept"), disabled: !canAccept(c), onclick: () => onChange("accept") }, "採用"),
+    el("button", { type: "button", class: "no", "aria-pressed": String(d === "reject"), onclick: () => onChange("reject") }, "見送り")));
+}
+function setDecision(c, d, proposed) {
+  const prev = state.decisions[c.key] || {};
+  const p = proposed !== undefined ? proposed : prev.proposed;
+  state.decisions[c.key] = { d, proposed: p };
+  if (d === defaultDecision(c) && (p === undefined || p === c.cand.proposed)) delete state.decisions[c.key];
+  persist(); refresh();
+}
+const why = (k) => [
+  k.reason ? el("p", { class: "why" }, el("b", { text: "理由" }), k.reason) : null,
+  k.evidence ? el("p", { class: "why" }, el("b", { text: "根拠" }), k.evidence) : null,
+];
+function candidateItem(c) {
+  const k = c.cand;
+  const head = el("div", { class: "item-head" }, el("span", { class: "item-type", text: k.type || "候補" }), el("span", { class: "item-id tc", text: k.id || "" }), stateBadge(c));
+  if (c.state === "review") {
+    const input = el("input", { class: "field", type: "text", value: proposedOf(c), "aria-label": `#${k.index} の修正案`, placeholder: "確かめた表記を入力" });
+    const msg = el("p", { class: "field-msg" });
+    return el("div", { class: "item" }, head,
+      el("p", { class: "diffline", text: `「${k.original}」` }), ...why(k), input, msg,
+      decide(c, (d) => {
+        const v = input.value.trim();
+        if (d === "accept") {
+          if (!v) { msg.textContent = "修正案を入力してください。直さない場合は「見送り」を選びます。"; input.focus(); return; }
+          if (v === k.original) { msg.textContent = "原文と同じです。直さない場合は「見送り」を選びます。"; return; }
+          if (v.includes("-->")) { msg.textContent = "「-->」は使えません。"; return; }
+        }
+        setDecision(c, d, v);
+      }));
+  }
+  const kids = [head, el("p", { class: "diffline" }, el("del", { text: k.original }), el("span", { class: "arrow", text: "→" }), k.proposed ? el("ins", { text: k.proposed }) : el("span", { class: "why", text: "（削除）" })), ...why(k)];
+  if (c.state === "refused") {
+    kids.push(el("p", { class: "banner" + (c.approvable ? "" : " err"), text: "適用されなかった理由：" + c.refused_reason }));
+    if (!c.approvable) kids.push(el("p", { class: "why", text: "この候補は画面から採用できません。直す場合は「この字幕を直接直す」を使います。" }));
+  }
+  kids.push(decide(c, (d) => setDecision(c, d)));
+  return el("div", { class: "item" }, kids);
+}
+function linebreakItem(cue) {
+  const kept = !state.linebreak[cue.index];
+  return el("div", { class: "item" },
+    el("div", { class: "item-head" }, el("span", { class: "item-type", text: cue.script_label === "改行だけ" ? "改行の調整" : "句読点・改行の調整" }), el("span", { class: "item-id", text: "スクリプト" }),
+      el("span", { class: "state " + (kept ? "on" : "off") }, el("i"), kept ? "適用済み" : "見送り（保存後に元へ戻る）")),
+    el("p", { class: "why", style: "margin-top:8px", text: cue.linebreak_note || "改行を整えた" }),
+    el("div", { class: "decide" }, el("div", { class: "seg", role: "group", "aria-label": "改行の扱い" },
+      el("button", { type: "button", class: "yes", "aria-pressed": String(kept), onclick: () => { delete state.linebreak[cue.index]; persist(); refresh(); } }, "採用"),
+      el("button", { type: "button", class: "no", "aria-pressed": String(!kept), onclick: () => { state.linebreak[cue.index] = true; persist(); refresh(); } }, "見送り"))));
+}
+function manualItem(cue) {
+  const has = state.manual[cue.index] !== undefined;
+  const ta = el("textarea", { class: "field", rows: "3", "aria-label": `#${cue.index} の本文` });
+  ta.value = currentAfter(cue).join("\n");
+  const msg = el("p", { class: "field-msg" });
+  return el("details", { class: "item manual", open: has },
+    el("summary", { text: has ? "手動修正あり" : "この字幕を直接直す" }),
+    el("p", { class: "why", style: "margin-top:8px", text: "改行も含め、この内容がそのまま修正版になります。数字・否定・語尾の安全チェックは行われないため、音声や資料で確かめたものだけにしてください。" }),
+    ta, msg,
+    el("div", { class: "row-actions" },
+      el("button", { type: "button", class: "btn primary", onclick: () => {
+        const lines = ta.value.split("\n").map((s) => s.trim()).filter(Boolean);
+        if (!lines.length) { msg.textContent = "本文を空にはできません（字幕の削除は件数の変更になります）。"; return; }
+        if (lines.some((s) => s.includes("-->"))) { msg.textContent = "「-->」は使えません。"; return; }
+        if (lines.join("\n") === cue.before.join("\n")) { msg.textContent = "元の字幕と同じです。元に戻すには、各修正を「見送り」にします。"; return; }
+        state.manual[cue.index] = lines.join("\n"); persist(); refresh(); toast("手動修正を記録しました");
+      } }, "この内容で直す"),
+      has ? el("button", { type: "button", class: "btn quiet", onclick: () => { delete state.manual[cue.index]; persist(); refresh(); } }, "取り消す") : null));
+}
+function renderItems() {
+  const box = $("items"); box.replaceChildren();
+  const cue = cueByIndex.get(selected);
+  if (!cue) { box.append(el("p", { class: "none", text: "字幕を選んでください。" })); return; }
+  if (isFast(cue)) {
+    const n = width(currentAfter(cue).join("").replace(/\s+/g, ""));
+    box.append(el("p", { class: "banner long", style: "margin:0 0 10px",
+      text: `見やすさの目安より速い：${fmt(n)}字 / ${fmt(cue.duration)}秒 = 1秒あたり${fmt(n / cue.duration)}字（目安 ${viewCps}字）。目安なので誤りではありません（時刻は変更していません）` }));
+  }
+  for (const f of cue.flags.filter((x) => x.kind !== "長い")) box.append(el("p", { class: "banner " + (f.kind === "構造" ? "err" : "long"), style: "margin:0 0 10px",
+    text: `${f.kind === "収まらない" ? "上限に収まらない" : "構造の注意"}：${f.detail}（時刻は変更していません）` }));
+  const cs = candsByCue.get(cue.index) || [];
+  for (const c of cs) box.append(candidateItem(c));
+  if (cue.linebreak_only) box.append(linebreakItem(cue));
+  if (!cs.length && !cue.linebreak_only) box.append(el("p", { class: "none", text: "この字幕に修正はありません。" }));
+  box.append(manualItem(cue));
+}
+
+function renderCps() {
+  for (const b of document.querySelectorAll("#cpsSeg button")) b.setAttribute("aria-pressed", String(Number(b.dataset.cps) === viewCps));
+}
+for (const b of document.querySelectorAll("#cpsSeg button")) b.addEventListener("click", () => {
+  viewCps = Number(b.dataset.cps);
+  try { sessionStorage.setItem(CPS_KEY, String(viewCps)); } catch (e) {}
+  renderCps(); renderTop(); refresh();
+});
+function refresh() {
+  const sc = document.querySelector(".inspector").scrollTop;
+  renderSaveBtn(); renderTabs(); renderList(); renderViewer(); renderTimeline(); renderItems();
+  document.querySelector(".inspector").scrollTop = sc;
+}
+
+// ── 保存 ─────────────────────────────────────────────────────
+function buildExport() {
+  const out = []; const used = new Set(D.candidates.map((c) => c.cand.id).filter(Boolean));
+  const newId = (p) => { let i = 1; while (used.has(p + String(i).padStart(3, "0"))) i++; const id = p + String(i).padStart(3, "0"); used.add(id); return id; };
+  const manualCues = new Set(Object.keys(state.manual).map(Number));
+  const counts = { accept: 0, reject: 0, manual: 0, linebreak: 0 };
+  for (const c of D.candidates) {
+    const k = { ...c.cand }; const d = decisionOf(c);
+    if (manualCues.has(Number(k.index)) && k.status !== "review") {
+      k.status = "review"; k.reason = (k.reason || "") + "（確認画面の手動修正に置き換え）";
+    } else if (c.state === "applied" && d === "reject") {
+      k.status = "review"; k.decision = "rejected"; k.reason = (k.reason || "") + "（確認画面で見送り）"; counts.reject++;
+    } else if (c.state === "refused" && c.approvable && d === "accept") {
+      k.approved = true; k.evidence = (k.evidence || "") + "（確認画面で利用者が承認）"; counts.accept++;
+    } else if (c.state === "review" && d === "accept") {
+      k.status = "apply"; k.proposed = proposedOf(c); k.approved = true; delete k.decision;
+      if (!["誤字", "誤変換", "表記ゆれ", "固有名詞", "句読点", "改行"].includes(k.type)) k.type = "手動修正";
+      k.evidence = (k.evidence || "") + "（確認画面で利用者が確認して採用）"; counts.accept++;
+    } else if (c.state === "review" && d === "reject" && k.decision !== "rejected") {
+      k.decision = "rejected"; k.reason = (k.reason || "") + "（確認画面で見送り）";
+    } else if (c.state === "review" && d === "accept") {
+      delete k.decision;
+    }
+    out.push(k);
+  }
+  for (const [idx, text] of Object.entries(state.manual)) {
+    const cue = cueByIndex.get(Number(idx));
+    out.push({ id: newId("M"), index: cue.index, start: cue.start, scope: "cue", type: "手動修正", original: cue.flat_before, proposed: text,
+      reason: "確認画面で利用者が直接直した", evidence: "利用者の確認", status: "apply", approved: true });
+    counts.manual++;
+  }
+  for (const idx of Object.keys(state.linebreak)) {
+    const cue = cueByIndex.get(Number(idx));
+    if (manualCues.has(cue.index)) continue;
+    out.push({ id: newId("L"), index: cue.index, start: cue.start, scope: "cue", type: "改行", original: cue.flat_before, proposed: cue.before.join("\n"),
+      reason: "元の改行に戻す（確認画面で見送り）", evidence: "利用者の判断", status: "apply", approved: true });
+    counts.linebreak++;
+  }
+  return { doc: { ...D.candidates_doc, source_sha256: D.source_sha256, reviewed_in: "review.html", candidates: out }, counts };
+}
+const outName = () => `${D.stem}.candidates.reviewed.json`;
+function command() {
+  const q = (s) => /[\s'"]/.test(s) ? `"${s}"` : s;
+  const parts = ["python3", "~/.claude/skills/japanese-subtitle-polish/scripts/apply_candidates.py", q(D.file), q(outName())];
+  if (D.glossary) parts.push("--glossary", q(D.glossary));
+  if (D.preset && D.preset !== "standard") parts.push("--preset", D.preset);
+  if (S.allow_types && S.allow_types.length) parts.push("--allow", S.allow_types.join(","));
+  parts.push("--overwrite");
+  return parts.join(" ");
+}
+function openSave() {
+  const { counts } = buildExport();
+  const bits = [];
+  if (counts.accept) bits.push(`採用 ${counts.accept}件`);
+  if (counts.reject) bits.push(`見送り ${counts.reject}件`);
+  if (counts.manual) bits.push(`手動修正 ${counts.manual}件`);
+  if (counts.linebreak) bits.push(`改行を元に戻す ${counts.linebreak}件`);
+  $("dlgSummary").textContent = `${bits.join("・") || "変更なし"}を、候補ファイル「${outName()}」に書き出します。この画面からSRTは書き換えません。`;
+  $("dlgCommand").textContent = command();
+  $("saveDialog").showModal();
+}
+async function saveFile() {
+  const text = JSON.stringify(buildExport().doc, null, 2) + "\n";
+  try {
+    if (window.showSaveFilePicker) {
+      const h = await window.showSaveFilePicker({ suggestedName: outName(), types: [{ description: "JSON", accept: { "application/json": [".json"] } }] });
+      const w = await h.createWritable(); await w.write(text); await w.close();
+      toast("保存しました"); return;
+    }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  const a = el("a", { href: URL.createObjectURL(new Blob([text], { type: "application/json" })), download: outName() });
+  document.body.append(a); a.click(); a.remove();
+  toast("ダウンロードフォルダに保存しました。元のSRTと同じフォルダへ移してください");
+}
+window.addEventListener("resize", () => renderTimeline());
+let toastTimer;
+function toast(t) { const n = $("toast"); n.textContent = t; n.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => n.classList.remove("show"), 2600); }
+
+async function applyInApp() {
+  const btn = $("saveBtn");
+  btn.disabled = true; $("saveLabel").textContent = "反映しています…";
+  try {
+    const res = await fetch(`/api/jobs/${APP.job}/decisions`, { method: "POST",
+      headers: { "Content-Type": "application/json", "X-Token": APP.token }, body: JSON.stringify(buildExport().doc) });
+    const r = await res.json().catch(() => ({}));
+    if (!res.ok || !r.ok) throw new Error(r.error || `反映できませんでした（${res.status}）`);
+    try { localStorage.removeItem(STORE); } catch (e) {}
+    try { sessionStorage.setItem("jsp-toast", r.verify_ok ? "反映しました。番号・時刻は原本と一致しています" : "反映しましたが、機械検査で不一致があります"); } catch (e) {}
+    location.reload();
+  } catch (e) {
+    $("saveLabel").textContent = "反映する"; renderSaveBtn(); toast(e.message);
+  }
+}
+if (APP) {
+  $("homeBtn").hidden = false;
+  const dl = $("downloadBtn"); dl.hidden = false; dl.href = `/jobs/${APP.job}/download`;
+  // Shift_JIS のSRTは、そのままの文字コードで書き出す。YouTube などに上げる場合のために UTF-8 版も選べる
+  if ((D.encoding || "utf-8") !== "utf-8") {
+    dl.textContent = "SRTを書き出す（Shift_JIS）";
+    const u8 = $("downloadUtf8Btn"); u8.hidden = false; u8.href = `/jobs/${APP.job}/download?utf8=1`;
+  }
+  $("saveLabel").textContent = "反映する";
+  $("saveBtn").addEventListener("click", applyInApp);
+  document.querySelector(".info p").textContent = "採用・見送りを選んで「反映する」を押すと、修正版を作り直して番号・時刻を検査します。「SRTを書き出す」で修正版を保存します。元のSRTは変更しません。←→キーで前後の字幕、Bキーで修正前・修正後を切り替えます。";
+  try { const t = sessionStorage.getItem("jsp-toast"); if (t) { sessionStorage.removeItem("jsp-toast"); setTimeout(() => toast(t), 200); } } catch (e) {}
+} else {
+  $("saveBtn").addEventListener("click", openSave);
+}
+$("dlgClose").addEventListener("click", () => $("saveDialog").close());
+$("dlgSave").addEventListener("click", saveFile);
+$("copyCmd").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(command()); toast("コマンドをコピーしました"); }
+  catch (e) { toast("コピーできませんでした。表示されたコマンドを選択してコピーしてください"); }
+});
+$("resetBtn").addEventListener("click", () => {
+  if (!changedCount()) { toast("戻す決定はありません"); return; }
+  if (!confirm("この画面での採用・見送り・手動修正をすべて元に戻しますか？")) return;
+  state = { decisions: {}, manual: {}, linebreak: {} }; persist(); refresh(); toast("元に戻しました");
+});
+$("showAfter").addEventListener("click", () => { side = "after"; renderViewer(); });
+$("showBefore").addEventListener("click", () => { side = "before"; renderViewer(); });
+$("prevBtn").addEventListener("click", () => step(-1));
+$("nextBtn").addEventListener("click", () => step(1));
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest("input, textarea, dialog") || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); step(1); }
+  else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); step(-1); }
+  else if (e.key === "b" || e.key === "B") { side = side === "after" ? "before" : "after"; renderViewer(); }
+});
+
+// ── 配色（自動・ライト・ダーク） ──
+function applyTheme(t) {
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  try { if (t === "auto") localStorage.removeItem("jsp-theme"); else localStorage.setItem("jsp-theme", t); } catch (e) {}
+  for (const b of document.querySelectorAll("[data-theme-set]")) b.setAttribute("aria-pressed", String(b.dataset.themeSet === t));
+}
+for (const b of document.querySelectorAll("[data-theme-set]")) b.addEventListener("click", () => applyTheme(b.dataset.themeSet));
+applyTheme(document.documentElement.dataset.theme || "auto");
+
+renderTop();
+renderFontbar();
+renderCps();
+{ const v = visible(); selected = v.length ? v[0].index : (D.cues[0] && D.cues[0].index); }
+refresh();
+</script>
+</body>
+</html>

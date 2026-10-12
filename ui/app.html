@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>try{const t=localStorage.getItem("jsp-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+<title>字幕ととのえ</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+/* LULU Apps（Koe Studio）と同じトークン */
+:root {
+  --bg: #f4f5fb; --surface: #ffffff; --panel: #fafbfe; --sunken: #eef0f8; --side: #eceefa;
+  --line: rgba(34, 36, 74, 0.10); --line-strong: rgba(34, 36, 74, 0.18);
+  --text: #16172e; --sub: #5a5d7a; --faint: #8a8ca6;
+  --accent: #534edc; --accent-press: #4640c8; --accent-soft: rgba(83, 78, 220, 0.10);
+  --brand: linear-gradient(135deg, #678bfb 0%, #534edc 60%, #3b36b8 100%);
+  --ok: #248a3d; --ok-soft: rgba(36, 138, 61, 0.10); --danger: #d70015; --danger-soft: rgba(215, 0, 21, 0.08);
+  --warn: #a35200; --warn-soft: rgba(201, 105, 0, 0.12);
+  --shadow: 0 1px 2px rgba(22, 23, 46, 0.05), 0 8px 24px rgba(22, 23, 46, 0.06);
+  --r-s: 8px; --r: 12px; --r-l: 18px;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14152a; --surface: #1d1f3b; --panel: #1a1c36; --sunken: #262950; --side: #1a1b2f;
+    --line: rgba(255, 255, 255, 0.08); --line-strong: rgba(255, 255, 255, 0.16);
+    --text: #eef0ff; --sub: #a9acd0; --faint: #7c80a8;
+    --accent: #7b78f2; --accent-press: #6d69ea; --accent-soft: rgba(123, 120, 242, 0.18);
+    --ok: #30d158; --ok-soft: rgba(48, 209, 88, 0.14); --danger: #ff6961; --danger-soft: rgba(255, 105, 97, 0.14);
+    --warn: #ffb340; --warn-soft: rgba(255, 159, 10, 0.15); --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14152a; --surface: #1d1f3b; --panel: #1a1c36; --sunken: #262950; --side: #1a1b2f;
+  --line: rgba(255, 255, 255, 0.08); --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #eef0ff; --sub: #a9acd0; --faint: #7c80a8;
+  --accent: #7b78f2; --accent-press: #6d69ea; --accent-soft: rgba(123, 120, 242, 0.18);
+  --ok: #30d158; --ok-soft: rgba(48, 209, 88, 0.14); --danger: #ff6961; --danger-soft: rgba(255, 105, 97, 0.14);
+  --warn: #ffb340; --warn-soft: rgba(255, 159, 10, 0.15); --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--bg); color: var(--text); font: 15px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto 0; height: 520px; z-index: -1; pointer-events: none;
+  background: radial-gradient(900px 420px at 50% -120px, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%); }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; border-radius: 6px; }
+[hidden] { display: none !important; }
+
+.top { display: flex; align-items: center; gap: 12px; padding: 14px 24px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 9px; background: var(--brand); display: grid; place-items: center; flex: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.app-icon { width: 38px; height: 38px; flex: none; }
+.brand b { display: block; font-size: 15px; letter-spacing: -0.01em; line-height: 1.25; }
+.brand span { display: block; font-size: 12px; color: var(--faint); }
+.spacer { flex: 1; }
+.seg { display: inline-flex; background: var(--sunken); border-radius: 10px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--sub); line-height: 1.35; transition: background 120ms ease, color 120ms ease; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(22, 23, 46, 0.12); }
+.seg button:disabled { opacity: 0.45; cursor: default; }
+.seg.wide { display: flex; }
+.seg.wide button { flex: 1; text-align: center; }
+.seg small { display: block; font-size: 11px; font-weight: 400; color: var(--faint); }
+
+main { max-width: 760px; margin: 0 auto; padding: 12px 24px 72px; }
+.layout { display: grid; gap: 16px; }
+.col-a, .col-b { min-width: 0; }
+.col-a > .settings, .col-b > .settings { margin-top: 16px; }
+.pair { display: grid; gap: 18px; }
+/* 広い画面では2列にして、縦のスクロールを短くする。左の見本はスクロールしても見え続ける */
+@media (min-width: 1180px) {
+  main { max-width: 1280px; }
+  .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .col-a { position: sticky; top: 16px; }
+  .col-b > .settings { margin-top: 0; }
+  .pair { grid-template-columns: 1fr 1fr; }
+  .col-b .actions.stick { margin: 16px 0 0; padding: 14px 16px 16px; border: 1px solid var(--line); border-radius: var(--r-l); }
+}
+.head { margin: 18px 0 22px; }
+.head h1 { margin: 0; font-size: 28px; line-height: 1.2; letter-spacing: -0.022em; font-weight: 700; }
+.head p { margin: 8px 0 0; color: var(--sub); font-size: 14px; }
+.promises { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.promises li { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px 5px 9px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; font-weight: 600; color: var(--sub); }
+.promises svg { color: var(--accent); flex: none; }
+.promo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 36px; }
+.promo a { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); color: var(--text); text-decoration: none; line-height: 1.45; transition: box-shadow 120ms ease, border-color 120ms ease; }
+.promo .pi { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; flex: none; color: var(--accent); background: var(--accent-soft); }
+.promo b { display: block; font-size: 13.5px; }
+.promo span.t { display: block; font-size: 12.5px; color: var(--sub); }
+.promo .arrow { margin-left: auto; color: var(--faint); flex: none; }
+@media (hover: hover) { .promo a:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); } }
+@media (max-width: 600px) { .promo { grid-template-columns: 1fr; } }
+.surface { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); box-shadow: var(--shadow); }
+
+.drop {
+  display: grid; place-items: center; text-align: center; gap: 10px; min-height: 240px; padding: 32px 24px;
+  border: 2px dashed var(--line-strong); border-radius: var(--r-l); background: var(--panel);
+  transition: border-color 120ms ease, background 120ms ease, transform 160ms var(--ease-out);
+}
+.drop.over { border-color: var(--accent); background: var(--accent-soft); transform: scale(1.01); }
+.drop .icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); display: grid; place-items: center; color: var(--accent); }
+.drop h2 { margin: 4px 0 0; font-size: 19px; letter-spacing: -0.01em; }
+.drop p { margin: 0; color: var(--sub); font-size: 13.5px; }
+.file { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+.file .icon { width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex: none; }
+.file b { display: block; font-size: 15px; overflow-wrap: anywhere; }
+.file span { display: block; font-size: 12.5px; color: var(--sub); }
+.file .grow { flex: 1; min-width: 0; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: var(--r-s); padding: 9px 16px; font-size: 14px; font-weight: 600; white-space: nowrap; user-select: none; text-decoration: none;
+  transition: transform 120ms var(--ease-out), background 120ms ease, opacity 120ms ease; }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.quiet { background: var(--sunken); color: var(--text); }
+.btn.ghost { background: transparent; color: var(--sub); padding: 6px 10px; }
+.btn.lg { padding: 12px 22px; font-size: 15px; }
+@media (hover: hover) {
+  .btn.primary:hover:not(:disabled) { background: var(--accent-press); }
+  .btn.quiet:hover:not(:disabled) { background: var(--line-strong); }
+  .btn.ghost:hover { background: var(--sunken); color: var(--text); }
+}
+
+.settings { margin-top: 16px; padding: 20px; display: grid; gap: 18px; }
+.label { display: block; font-size: 12.5px; font-weight: 600; color: var(--sub); margin: 0 0 8px; }
+.hint { font-size: 12.5px; color: var(--faint); line-height: 1.6; margin: 6px 0 0; }
+.hint.warn { color: var(--warn); }
+.dict { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 6px 4px 12px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 600; }
+.chip button { border: 0; background: transparent; color: inherit; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; }
+
+.actions { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.actions.stick { position: sticky; bottom: 0; z-index: 5; margin: 20px -24px 0; padding: 14px 24px 16px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+.actions .note { flex-basis: 100%; font-size: 12.5px; color: var(--faint); margin: 2px 0 0; line-height: 1.6; }
+.banner { display: flex; gap: 10px; align-items: flex-start; border-radius: var(--r); padding: 11px 14px; font-size: 13.5px; line-height: 1.55; margin-top: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.banner.err { background: var(--danger-soft); color: var(--danger); }
+.banner.info { background: var(--accent-soft); color: var(--accent); }
+
+.progress { margin-top: 16px; padding: 20px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.steps li { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--faint); }
+.steps li.now { color: var(--text); font-weight: 600; }
+.steps li.done { color: var(--sub); }
+.steps .mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--sunken); font-size: 12px; }
+.steps li.done .mark { background: var(--ok-soft); color: var(--ok); }
+.steps li.now .mark { background: var(--accent-soft); color: var(--accent); }
+.spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-foot { display: flex; align-items: center; gap: 12px; margin-top: 16px; font-size: 12.5px; color: var(--faint); }
+.progress-foot .grow { flex: 1; }
+
+.ai-box { display: grid; gap: 10px; }
+.ai-state { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--sub); }
+.ai-state .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
+.ai-state .dot.on { background: var(--ok); }
+.ai-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+select.field { appearance: none; min-width: 260px; flex: 1; background: var(--sunken); border: 1px solid transparent; border-radius: var(--r-s); padding: 9px 34px 9px 12px; font-size: 14px; color: var(--text);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238a8ca6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; }
+select.field:focus { outline: none; border-color: var(--accent); }
+.bar { position: relative; height: 8px; border-radius: 999px; background: var(--sunken); overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; background: var(--brand); transition: width 400ms var(--ease-out); }
+.bar.big { height: 10px; margin: 18px 0 10px; }
+.bar-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; color: var(--sub); }
+.bar-meta b { color: var(--text); font-variant-numeric: tabular-nums; }
+.font-row { display: flex; align-items: center; gap: 14px; }
+.font-row input[type=range] { flex: 1; accent-color: var(--accent); }
+.font-val { font-size: 13px; color: var(--sub); white-space: nowrap; }
+.font-val input { width: 64px; padding: 6px 8px; border-radius: var(--r-s); border: 1px solid transparent; background: var(--sunken); font-variant-numeric: tabular-nums; text-align: right; }
+.font-val input:focus { outline: none; border-color: var(--accent); }
+.mini-frame-wrap { display: flex; justify-content: center; margin-top: 12px; }
+.mini-frame { position: relative; width: 100%; max-width: 520px; aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; container-type: size;
+  background: radial-gradient(120% 90% at 50% 30%, #2a2b45 0%, #0d0e1a 72%); }
+.mini-frame.vertical { max-width: 200px; aspect-ratio: 9 / 16; }
+.mini-safe { position: absolute; inset: 5%; border: 1px dashed rgba(255, 255, 255, 0.14); border-radius: 2px; }
+.mini-sub { position: absolute; left: 5%; right: 5%; bottom: 8%; text-align: center; color: #fff; font-weight: 600; line-height: 1.3; white-space: pre-line; overflow-wrap: anywhere; text-shadow: 0 0 3px #000, 0 1px 2px #000; }
+.models { display: grid; gap: 8px; }
+.model-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 10px 12px; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); }
+.model-row.on { border-color: var(--accent); background: var(--accent-soft); }
+.model-row b { font-size: 14px; }
+.rec { margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; }
+.fitline { font-size: 12px; color: var(--sub); margin-top: 2px; }
+.fit { font-weight: 600; }
+.fit.recommended { color: var(--ok); }
+.fit.usable, .fit.tight { color: var(--warn); }
+.fit.unsupported { color: var(--danger); }
+.use { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.use input { accent-color: var(--accent); }
+.row-bar { grid-column: 1 / -1; }
+.fitlabel { font-size: 12.5px; color: var(--sub); }
+.section-title { display: flex; align-items: center; justify-content: space-between; margin: 36px 0 10px; }
+.section-title h2 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+.jobs { overflow: hidden; }
+.jobs .more-jobs { display: block; width: 100%; border-radius: 0; padding: 10px; font-size: 13px; }
+.job { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 13px 18px; border-top: 1px solid var(--line); }
+.job:first-child { border-top: 0; }
+.job b { display: block; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.job span { font-size: 12px; color: var(--faint); }
+.status { font-size: 12px; font-weight: 600; }
+.status.done { color: var(--ok); }
+.status.error, .status.cancelled { color: var(--danger); }
+.empty { padding: 18px; color: var(--faint); font-size: 13.5px; margin: 0; }
+footer { margin-top: 28px; font-size: 12.5px; color: var(--faint); line-height: 1.7; }
+
+.veil { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(6px); pointer-events: none; opacity: 0; transition: opacity 140ms var(--ease-out); }
+.veil.on { opacity: 1; }
+.veil div { padding: 22px 30px; border-radius: var(--r-l); background: var(--surface); box-shadow: var(--shadow); font-size: 17px; font-weight: 700; border: 2px dashed var(--accent); color: var(--accent); }
+@media (max-width: 600px) {
+  .top { padding: 12px 16px; flex-wrap: wrap; }
+  main { padding: 8px 16px 56px; }
+  .head h1 { font-size: 23px; }
+  .seg.wide { flex-direction: column; }
+  .actions.stick { margin: 20px -16px 0; padding: 12px 16px 14px; }  /* 画面の余白（16px）に合わせて、横にはみ出さない */
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation-duration: 1.5s !important; } .drop.over { transform: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <img class="app-icon" src="/assets/icon/icon_128.png" width="38" height="38" alt="">
+  <div class="brand"><b>字幕ととのえ</b><span>Japanese Subtitle Polish</span></div>
+  <span class="spacer"></span>
+  <div class="seg" role="group" aria-label="配色">
+    <button type="button" data-theme-set="auto">自動</button>
+    <button type="button" data-theme-set="light">ライト</button>
+    <button type="button" data-theme-set="dark">ダーク</button>
+  </div>
+</header>
+
+<main>
+  <div class="head">
+    <h1>SRTをドロップして、字幕を整える</h1>
+    <p>誤字・表記ゆれ・改行を直します。字幕の番号と時刻は変えません。元のファイルにも触れません。</p>
+    <ul class="promises" aria-label="このアプリの約束">
+      <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7.3 5.8 10 11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>番号・時刻はそのまま</li>
+      <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7.3 5.8 10 11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>改行は文字の大きさに合わせる</li>
+      <li><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 7.3 5.8 10 11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>AIはこのパソコンの中だけ</li>
+    </ul>
+  </div>
+
+  <div class="layout">
+  <div class="col-a">
+  <section id="dropZone" class="drop" aria-labelledby="dropTitle">
+    <div class="icon" aria-hidden="true">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 15V4m0 0-4 4m4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+    <h2 id="dropTitle">SRTファイルをここにドロップ</h2>
+    <p>Whisper・Premiere Pro・CapCut などの .srt。<br>固有名詞の辞書（.tsv / .json）も一緒にドロップできます。</p>
+    <button class="btn quiet" type="button" id="pickBtn">ファイルを選ぶ</button>
+  </section>
+
+  <section id="fileCard" class="surface file" hidden aria-live="polite">
+    <div class="icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 18 18" fill="none"><rect x="1.5" y="3" width="15" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 11h4.5M5 8.2h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="grow"><b id="fileName"></b><span id="fileMeta"></span></div>
+    <button class="btn ghost" type="button" id="changeBtn">別のファイル</button>
+  </section>
+
+  <section class="surface settings look" aria-label="動画と文字の大きさ">
+    <div>
+      <span class="label" id="lblSize">動画のサイズ</span>
+      <div class="seg wide" role="group" aria-labelledby="lblSize" data-name="size">
+        <button type="button" data-v="1920x1080" aria-pressed="true">横長<small>1920×1080</small></button>
+        <button type="button" data-v="1080x1920">縦型ショート<small>1080×1920</small></button>
+        <button type="button" data-v="3840x2160">横長 4K<small>3840×2160</small></button>
+      </div>
+    </div>
+    <div>
+      <span class="label" id="lblFont">文字の大きさ（編集ソフトで字幕に使う大きさ）</span>
+      <div class="font-row">
+        <input type="range" id="fontRange" min="30" max="200" step="1" aria-labelledby="lblFont">
+        <span class="font-val"><input type="number" id="fontNum" min="8" max="960" step="1" aria-label="文字の大きさ（px）"> px</span>
+      </div>
+      <div class="mini-frame-wrap"><div class="mini-frame" id="miniFrame"><div class="mini-safe"></div><div class="mini-sub" id="miniSub"></div></div></div>
+      <p class="hint" id="fontHint"></p>
+    </div>
+  </section>
+  </div>
+
+  <div class="col-b">
+  <section id="settings" class="surface settings" aria-label="整え方">
+    <div>
+      <span class="label" id="lblLines">1つの字幕の行数</span>
+      <div class="seg wide" role="group" aria-labelledby="lblLines" data-name="lines">
+        <button type="button" data-v="1">1行</button>
+        <button type="button" data-v="2" aria-pressed="true">2行まで</button>
+        <button type="button" data-v="3">3行まで</button>
+      </div>
+    </div>
+    <div>
+      <span class="label" id="lblCps">見やすさの目安（1秒に読む字数）</span>
+      <div class="seg wide" role="group" aria-labelledby="lblCps" data-name="cps">
+        <button type="button" data-v="4" aria-pressed="true">1秒4字<small>ゆったり・現場の目安</small></button>
+        <button type="button" data-v="6">1秒6字<small>話し言葉に近い</small></button>
+        <button type="button" data-v="8">1秒8字<small>速め</small></button>
+        <button type="button" data-v="0">知らせない</button>
+      </div>
+      <p class="hint">目安より速い字幕に印を付けるだけで、字幕も時刻も変えません。確認画面でも切り替えられます。</p>
+    </div>
+    <div class="pair">
+    <div>
+      <span class="label" id="lblPunct">句読点</span>
+      <div class="seg wide" role="group" aria-labelledby="lblPunct" data-name="punctuation">
+        <button type="button" data-v="keep" aria-pressed="true">残す<small>字幕向け</small></button>
+        <button type="button" data-v="telop">外す<small>テロップ向け</small></button>
+      </div>
+    </div>
+    <div>
+      <span class="label" id="lblFill">「えー」「えっと」など</span>
+      <div class="seg wide" role="group" aria-labelledby="lblFill" data-name="fillers">
+        <button type="button" data-v="0" aria-pressed="true">残す<small>話したとおり</small></button>
+        <button type="button" data-v="1">消す<small>AIで整えるときだけ</small></button>
+      </div>
+    </div>
+    </div>
+    <p class="hint" style="margin-top:-8px">テロップ向けは「、」「。」やかっこを外し、ー・…・！・？は残します。</p>
+    <div>
+      <span class="label" id="lblAI">AI（このパソコンの中で動くローカルAI）</span>
+      <div class="ai-box" id="aiBox" aria-labelledby="lblAI"></div>
+    </div>
+    <div>
+      <span class="label" id="lblDone">終わったら知らせる</span>
+      <div class="ai-row">
+        <div class="seg" role="group" aria-label="通知" data-name="notify">
+          <button type="button" data-v="1" aria-pressed="true">通知オン</button>
+          <button type="button" data-v="0">通知オフ</button>
+        </div>
+        <div class="seg" role="group" aria-label="完了音" data-name="sound">
+          <button type="button" data-v="1" aria-pressed="true">音オン</button>
+          <button type="button" data-v="0">音オフ</button>
+        </div>
+        <button class="btn ghost" type="button" id="testNotify">試す</button>
+      </div>
+      <p class="hint" id="notifyHint"></p>
+    </div>
+    <div>
+      <span class="label">固有名詞の辞書（任意）</span>
+      <div class="dict">
+        <span id="dictChip" class="chip" hidden><span id="dictName"></span><button type="button" id="dictClear" aria-label="辞書を外す">×</button></span>
+        <button class="btn quiet" type="button" id="dictBtn">辞書を選ぶ</button>
+      </div>
+      <p class="hint">「Premiere Pro（タブ）プレミアプロ|premiere pro」のように、正しい表記と間違えやすい書き方を並べたファイルです。</p>
+    </div>
+  </section>
+
+  <div class="actions" id="actions">
+    <button class="btn primary lg" type="button" id="aiBtn" disabled>AIで整える</button>
+    <button class="btn quiet lg" type="button" id="basicBtn" disabled>AIなしで整える</button>
+    <p class="note" id="actionNote"></p>
+  </div>
+
+  <section id="progress" class="surface progress" hidden aria-live="polite">
+    <ol class="steps" id="steps"></ol>
+    <div class="bar big" role="progressbar" aria-label="進み具合" aria-valuemin="0" aria-valuemax="100" id="pbar"><i id="pfill"></i></div>
+    <div class="bar-meta"><span id="ptext">準備しています</span><b id="ppct">0%</b></div>
+    <div class="progress-foot"><span class="grow" id="elapsed"></span><button class="btn ghost" type="button" id="cancelBtn">中止</button></div>
+  </section>
+  <div id="error" class="banner err" role="alert" hidden></div>
+  </div>
+  </div>
+
+  <div class="section-title"><h2>最近の作業</h2></div>
+  <div class="surface jobs" id="jobs"><p class="empty">まだありません。</p></div>
+
+  <nav class="promo" aria-label="LULU Apps">
+    <a href="https://luluapps.booth.pm/" target="_blank" rel="noopener"><span class="pi" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 7h12l-1 10H5L4 7z"/><path d="M7.5 7V5.5a2.5 2.5 0 0 1 5 0V7" stroke-linecap="round"/></svg></span><span><b>LULU Apps のツール</b><span class="t">映像編集とデザインを、もっと速く。BOOTH で公開中</span></span><svg class="arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <a href="https://note.com/luluapps" target="_blank" rel="noopener"><span class="pi" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h7l3 3v11H5z"/><path d="M8 9.5h4.5M8 12.5h4.5"/></svg></span><span><b>LULU Apps の note</b><span class="t">開発のこと、思っていること、日々のことを書いています</span></span><svg class="arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  </nav>
+
+  <footer id="foot"></footer>
+</main>
+
+<input type="file" id="filePick" accept=".srt,.tsv,.json,text/plain,application/json" multiple hidden>
+<input type="file" id="dictPick" accept=".tsv,.json" hidden>
+<div class="veil" id="veil" aria-hidden="true"><div>ドロップして読み込む</div></div>
+
+<script>
+"use strict";
+const APP = /*__APP__*/null;
+const $ = (id) => document.getElementById(id);
+const state = { srt: null, dict: null, settings: { v: 2, size: "1920x1080", font: 115, lines: "2", cps: "4", punctuation: "keep", fillers: "0", model: "", notify: "1", sound: "1" }, job: null, timer: null, started: 0, ai: null, aiTimer: null };
+const aiReady = () => !!(state.ai && state.ai.enabled && state.ai.running && (state.ai.models || []).some((m) => m.name === state.settings.model && !m.version_issue));
+const api = async (path, body) => {
+  const res = await fetch(path, body === undefined ? { headers: { "X-Token": APP.token } } :
+    { method: "POST", headers: { "Content-Type": "application/json", "X-Token": APP.token }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `うまくいきませんでした（${res.status}）`);
+  return data;
+};
+const b64 = (buf) => {
+  const bytes = new Uint8Array(buf); let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+};
+const showError = (msg) => { const e = $("error"); e.textContent = msg; e.hidden = !msg; };
+
+// ── 配色 ──
+function applyTheme(t) {
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  try { if (t === "auto") localStorage.removeItem("jsp-theme"); else localStorage.setItem("jsp-theme", t); } catch (e) {}
+  for (const b of document.querySelectorAll("[data-theme-set]")) b.setAttribute("aria-pressed", String(b.dataset.themeSet === t));
+}
+for (const b of document.querySelectorAll("[data-theme-set]")) b.addEventListener("click", () => applyTheme(b.dataset.themeSet));
+applyTheme(document.documentElement.dataset.theme || "auto");
+
+// ── 設定 ──
+try { Object.assign(state.settings, JSON.parse(localStorage.getItem("jsp-settings") || "{}")); } catch (e) {}
+if (!FONT_DEFAULT_OK()) { state.settings.size = "1920x1080"; state.settings.font = 115; }
+if (state.settings.v !== 2) { state.settings.v = 2; state.settings.cps = "4"; state.settings.font = FONT_DEFAULT[state.settings.size] || 115; }
+function FONT_DEFAULT_OK() { return /^\d+x\d+$/.test(state.settings.size || "") && Number(state.settings.font) > 0; }
+// 初期値は映像制作の現場基準（1行12〜15字・2行まで・1秒4字）に合わせる
+const FONT_DEFAULT = { "1920x1080": 115, "1080x1920": 80, "3840x2160": 230 };
+const SAMPLE = ["書き出しの設定を間違えると画質が大きく変わってしまいます"];
+function charsPerLine() {
+  const w = Number(state.settings.size.split("x")[0]);
+  return Math.max(4, Math.floor((w * 0.9) / Number(state.settings.font)));
+}
+function renderFont() {
+  const [w, h] = state.settings.size.split("x").map(Number);
+  const font = Number(state.settings.font);
+  $("fontRange").min = Math.min(Math.round(w / 64), font); $("fontRange").max = Math.max(Math.round(w / 9.6), font); $("fontRange").step = 1;
+  $("fontRange").value = font; $("fontNum").value = font;
+  const frame = $("miniFrame");
+  frame.classList.toggle("vertical", h > w);
+  $("miniSub").style.fontSize = (font / w * 100) + "cqw";
+  schedulePreview();
+}
+// 見本の改行は、整えるときと同じ決め方（語の途中を避ける）でアプリに作ってもらう
+let previewTimer = null, previewSeq = 0;
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(async () => {
+    const seq = ++previewSeq;
+    const [w, h] = state.settings.size.split("x").map(Number);
+    const sample = (state.srt && state.srt.sample) || SAMPLE;
+    let r;
+    try {
+      r = await api("/api/preview", { lines: sample, video_size: state.settings.size, font_px: Number(state.settings.font),
+        max_lines: Number(state.settings.lines), punctuation: state.settings.punctuation });
+    } catch (e) {
+      const per = charsPerLine(), flat = sample.join("");
+      r = { lines: [], fits: flat.length <= per * Number(state.settings.lines), per_line: per };
+      for (let i = 0; i < flat.length; i += per) r.lines.push(flat.slice(i, i + per));
+    }
+    if (seq !== previewSeq) return;
+    $("miniSub").textContent = r.lines.join("\n");
+    const per = r.per_line;
+    const genba = per > 15 ? "現場基準（1行12〜15字）より多めです。" : per < 12 ? "現場基準（1行12〜15字）より少なめです。" : "現場基準（1行12〜15字）の範囲です。";
+    const own = !!(state.srt && state.srt.sample);
+    $("fontHint").textContent = `この大きさだと、1行に入るのは約${per}字です（${w}×${h}の動画で、左右5%ずつ空けた幅）。${genba}`
+      + (own ? "見本は、ドロップした字幕のいちばん長いものです。" : "")
+      + (r.fits ? "" : `この字幕は${state.settings.lines}行に収まりません${r.needed_lines ? `（この大きさでは${r.needed_lines}行）` : ""}。整えたあと、要確認一覧で知らせます（字幕の分割や時刻の変更はしません）。`);
+    $("fontHint").classList.toggle("warn", !r.fits);
+  }, 120);
+}
+$("fontRange").addEventListener("input", (e) => { state.settings.font = Number(e.target.value); saveSettings(); renderFont(); });
+$("fontNum").addEventListener("change", (e) => {
+  const w = Number(state.settings.size.split("x")[0]);
+  const v = Math.max(8, Math.min(Math.round(w / 4), Number(e.target.value) || FONT_DEFAULT[state.settings.size] || 80));
+  state.settings.font = v; saveSettings(); renderFont();
+});
+function renderSettings() {
+  for (const g of document.querySelectorAll("[data-name]")) {
+    for (const b of g.querySelectorAll("button")) {
+      b.setAttribute("aria-pressed", String(state.settings[g.dataset.name] === b.dataset.v));
+      if (g.dataset.name === "fillers" && b.dataset.v === "1") b.disabled = !aiReady();
+    }
+  }
+}
+for (const g of document.querySelectorAll("[data-name]")) for (const b of g.querySelectorAll("button")) b.addEventListener("click", () => {
+  const prevSize = state.settings.size;
+  state.settings[g.dataset.name] = b.dataset.v;
+  if (g.dataset.name === "size" && prevSize !== b.dataset.v) {
+    // サイズを変えたら、同じ見た目の比率になるよう文字の大きさも合わせる
+    const r = Number(b.dataset.v.split("x")[0]) / Number(prevSize.split("x")[0]);
+    state.settings.font = Math.round(Number(state.settings.font) * r) || FONT_DEFAULT[b.dataset.v];
+  }
+  saveSettings(); renderFont();
+  if (g.dataset.name === "notify") syncPrefs();
+  renderSettings(); renderActions();
+});
+
+
+// ── ファイル ──
+async function takeFiles(files) {
+  showError("");
+  for (const f of files) {
+    const ext = f.name.split(".").pop().toLowerCase();
+    if (f.size > 8 * 1024 * 1024) { showError(`${f.name} は大きすぎます（8MBまで）`); continue; }
+    if (ext === "srt") {
+      const buf = await f.arrayBuffer();
+      let text;
+      try { text = new TextDecoder("utf-8", { fatal: true }).decode(buf); }
+      catch (e) { try { text = new TextDecoder("shift_jis").decode(buf); } catch (e2) { text = new TextDecoder("utf-8").decode(buf); } }
+      const count = (text.match(/-->/g) || []).length;
+      if (!count) { showError(`${f.name} にSRTの時刻（-->）が見つかりません。SRTファイルか確認してください。`); continue; }
+      // 見本用に、いちばん長い字幕の本文行を取り出す（番号と時刻の行は除く）
+      const cues = text.replace(/^\uFEFF/, "").replace(/\r/g, "").split(/\n\s*\n/)
+        .map((b) => b.split("\n").filter((l) => l.trim() && !/^\d+$/.test(l.trim()) && !l.includes("-->")))
+        .filter((ls) => ls.length);
+      const longest = cues.sort((a, b) => b.join("").length - a.join("").length)[0] || null;
+      state.srt = { name: f.name, data: b64(buf), count, size: f.size, sample: longest };
+    } else if (ext === "tsv" || ext === "json") {
+      state.dict = { name: f.name, data: b64(await f.arrayBuffer()) };
+    } else {
+      showError(`${f.name} は使えません。.srt（字幕）か、.tsv / .json（辞書）をドロップしてください。`);
+    }
+  }
+  renderFile(); renderActions();
+}
+function renderFile() {
+  renderFont();
+  $("dropZone").hidden = !!state.srt;
+  $("fileCard").hidden = !state.srt;
+  if (state.srt) {
+    $("fileName").textContent = state.srt.name;
+    $("fileMeta").textContent = `字幕 ${state.srt.count}件・${(state.srt.size / 1024).toFixed(1)}KB`;
+  }
+  $("dictChip").hidden = !state.dict;
+  $("dictBtn").textContent = state.dict ? "辞書を変える" : "辞書を選ぶ";
+  if (state.dict) $("dictName").textContent = state.dict.name;
+}
+function renderActions() {
+  const busy = !!state.timer;
+  const ready = aiReady();
+  if (!ready && state.settings.fillers === "1") state.settings.fillers = "0";
+  $("aiBtn").disabled = !state.srt || !ready || busy;
+  $("basicBtn").disabled = !state.srt || busy || state.settings.fillers === "1";
+  $("aiBtn").hidden = !(state.ai && state.ai.enabled);
+  $("actions").hidden = busy;
+  $("actions").classList.toggle("stick", !!state.srt);
+  $("actionNote").textContent = !state.srt ? "まずSRTファイルをドロップしてください。"
+    : ready ? `AIで整える：誤字・誤変換・表記ゆれも探します（${state.settings.model}・パソコンの中だけ）。AIなし：辞書・改行・句読点だけをすぐに整えます。`
+    : "AIなしで、辞書・改行・句読点を整えます。誤字や誤変換も直すには、上の「AI」の準備をしてください。";
+  renderSettings();
+}
+
+// ── ローカルAI（Ollama） ──
+const GB = (n) => (n / 1e9).toFixed(1) + "GB";
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "text") n.textContent = v; else if (k === "class") n.className = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== "") n.append(c);
+  return n;
+}
+async function loadAI() {
+  try { state.ai = await api("/api/ai"); } catch (e) { state.ai = { enabled: false }; }
+  const ai = state.ai;
+  if (ai.enabled && ai.models && ai.models.length) pickModel(ai);
+  renderAI(); renderActions();
+  const busy = (ai.pull && ai.pull.status === "pulling") || (ai.install && ["download", "verify", "extract", "start"].includes(ai.install.phase));
+  if (state.wasBusy && !busy && ((ai.pull && ai.pull.status === "done") || (ai.install && ai.install.phase === "done"))) {
+    playChime(); browserNotify("字幕ととのえ", ai.pull && ai.pull.status === "done" ? `${ai.pull.model} を入れました` : "AIエンジンの準備ができました");
+  }
+  state.wasBusy = busy;
+  clearTimeout(state.aiTimer);
+  if (busy) state.aiTimer = setTimeout(loadAI, 1000);
+}
+function bar(done, total, label) {
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const b = el("div", { class: "bar", role: "progressbar", "aria-valuenow": String(pct), "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": label }, el("i", {}));
+  b.firstChild.style.width = (total ? pct : 4) + "%";
+  return [b, el("div", { class: "bar-meta" }, el("span", { text: label + (total ? `（${GB(done)} / ${GB(total)}）` : "") }), el("b", { text: total ? pct + "%" : "" }))];
+}
+function pickModel(ai) {
+  const installed = (ai.models || []).filter((m) => !m.version_issue).map((m) => m.name);
+  // このPC・このエンジンで使えないモデル（fit が unsupported）は選ばない
+  const usable = (ai.catalog || []).filter((c) => c.fit.level !== "unsupported");
+  const blocked = (ai.catalog || []).some((c) => c.id === state.settings.model && c.fit.level === "unsupported");
+  if (installed.includes(state.settings.model) && !blocked) return;
+  const rec = usable.find((c) => c.recommended && installed.includes(c.id));
+  const cat = usable.find((c) => installed.includes(c.id));
+  state.settings.model = (rec || cat || { id: installed[0] || "" }).id;
+}
+function renderAI() {
+  const box = $("aiBox"), ai = state.ai || {};
+  const line = (on, text) => el("div", { class: "ai-state" }, el("span", { class: "dot" + (on ? " on" : "") }), text);
+  const kids = [];
+  if (!ai.enabled) { box.replaceChildren(line(false, "ローカルAIを使わない設定で起動しています。AIなしで整えます。")); return; }
+  kids.push(el("p", { class: "hint", style: "margin:0", text: "AIエンジン（Ollama）はAIを動かす仕組み、AIモデルは字幕を読んで誤りを探す頭脳です。どちらもこのパソコンの中で動き、字幕を外へ送りません。" }));
+  const m = ai.machine || {};
+  {
+    const g = (m.gpus || []).filter((x) => x.kind === "discrete").map((x) => `${x.name}（VRAM ${x.vram_gb}GB）`).join("、");
+    const head = m.apple_silicon ? `${m.apple_silicon}（統合メモリ ${m.memory_gb}GB）` : `メモリ ${m.memory_gb ?? "取得できませんでした"}GB${g ? "・" + g : ""}`;
+    kids.push(el("p", { class: "hint", style: "margin:0", text: `このパソコン：${head}・空きディスク ${m.disk_free_gb == null ? "取得できませんでした" : (m.disk_free_gb >= 100 ? Math.round(m.disk_free_gb) : m.disk_free_gb)}GB` }));
+    for (const n of m.notes || []) kids.push(el("p", { class: "hint", style: "margin:0", text: n }));
+  }
+  const ins = ai.install || {};
+  const installing = ["download", "verify", "extract", "start"].includes(ins.phase);
+  if (installing) {
+    kids.push(line(false, "AIエンジンを準備しています"), ...bar(ins.done, ins.total, ins.status || "準備しています"));
+    kids.push(el("div", { class: "ai-row" }, el("button", { class: "btn ghost", type: "button", onclick: async () => { await api("/api/ai/install/cancel", {}); } }, "中止")));
+  } else if (ai.code === "not-installed") {
+    kids.push(line(false, ai.message));
+    kids.push(el("div", { class: "ai-row" }, el("button", { class: "btn primary", type: "button", onclick: async (e) => {
+      if (!confirm(`AIエンジン（Ollama ${ai.target_version}）を取得します${ai.download_bytes ? "（約" + Math.round(ai.download_bytes / 1e6) + "MB）" : ""}。よろしいですか？`)) return;
+      e.target.disabled = true;
+      try { await api("/api/ai/install", {}); } catch (err) { showError(err.message); }
+      loadAI();
+    } }, `AIエンジンを準備${ai.download_bytes ? "（約" + Math.round(ai.download_bytes / 1e6) + "MB）" : ""}`)));
+    kids.push(el("p", { class: "hint", style: "margin:0", text: `取得元は Ollama 公式（GitHub）の ${ai.target_version} です。配布元の照合値と照らし合わせてから使います。置き場所：${ai.engine_dir}` }));
+    if (ins.phase === "error") kids.push(el("p", { class: "hint", style: "margin:0;color:var(--danger)", text: "準備できませんでした：" + ins.error }));
+  } else if (ai.code === "installed-not-running") {
+    kids.push(line(false, ai.message));
+    kids.push(el("div", { class: "ai-row" }, el("button", { class: "btn primary", type: "button", onclick: async (e) => {
+      e.target.disabled = true; e.target.textContent = "起動しています…";
+      try { await api("/api/ai/start", {}); } catch (err) { showError(err.message); }
+      loadAI();
+    } }, "AIエンジンを起動")));
+    // 準備の最後（起動）で止まったときは、その理由をここに出す（エンジン自体は用意できている）
+    if (ins.phase === "error" && ins.error) kids.push(el("p", { class: "hint", style: "margin:0;color:var(--danger)", text: ins.error }));
+  } else if (ai.code === "unsupported-platform") {
+    kids.push(line(false, ai.message));
+  } else {
+    kids.push(line(true, ai.message));
+    pickModel(ai);
+    const installed = new Set((ai.models || []).map((x) => x.name));
+    const p = ai.pull || {};
+    const rows = (ai.catalog || []).map((c) => {
+      const has = installed.has(c.id);
+      const bad = c.fit.level === "unsupported" || !!c.fit.disk;
+      const right = has && c.fit.level === "unsupported"
+        ? el("span", { class: "fitlabel", text: "使えません" })
+        : has
+        ? el("label", { class: "use" }, el("input", { type: "radio", name: "model", value: c.id, checked: state.settings.model === c.id,
+            onchange: () => { state.settings.model = c.id; saveSettings(); renderAI(); renderActions(); } }), "使う")
+        : p.status === "pulling" && p.model === c.id ? el("span", { class: "fitlabel", text: "入れています" })
+        : el("button", { class: "btn quiet", type: "button", disabled: bad || p.status === "pulling", onclick: () => pull(c.id, c.download_gb) }, `入れる（${c.download_gb}GB）`);
+      const row = el("div", { class: "model-row" + (state.settings.model === c.id && has ? " on" : "") },
+        el("div", {}, el("b", { text: c.id }), c.recommended ? el("span", { class: "rec", text: "おすすめ" }) : null,
+          el("div", { class: "fitline", title: c.fit.reason || "" }, el("span", { class: "fit " + c.fit.level, text: c.fit.label }), `・${c.note}`),
+          c.fit.disk ? el("div", { class: "fitline", style: "color:var(--danger)", text: c.fit.disk }) : null,
+          c.fit.level === "unsupported" && c.fit.reason ? el("div", { class: "fitline", text: c.fit.reason }) : null),
+        right);
+      if (p.status === "pulling" && p.model === c.id) row.append(el("div", { class: "row-bar" }, ...bar(p.done, p.total, "ダウンロード")));
+      return row;
+    });
+    kids.push(el("div", { class: "models" }, rows));
+    const others = (ai.models || []).filter((x) => !(ai.catalog || []).some((c) => c.id === x.name));
+    if (others.length) {
+      kids.push(el("p", { class: "hint", style: "margin:0", text: "ほかに入っているモデル（字幕ととのえで確かめていないもの）：" }));
+      kids.push(el("div", { class: "ai-row" }, others.map((o) => el("label", { class: "use", title: o.version_issue || "" }, el("input", { type: "radio", name: "model", value: o.name, disabled: !!o.version_issue, checked: state.settings.model === o.name,
+        onchange: () => { state.settings.model = o.name; saveSettings(); renderAI(); renderActions(); } }), o.name, o.version_issue ? "（AIエンジンの更新が必要）" : ""))));
+    }
+    if (p.status === "error") kids.push(el("p", { class: "hint", style: "margin:0;color:var(--danger)", text: "モデルを入れられませんでした：" + p.error }));
+  }
+  box.replaceChildren(...kids);
+}
+async function pull(model, gb) {
+  if (!confirm(`${model}（約${gb}GB）をダウンロードします。よろしいですか？`)) return;
+  try { await api("/api/ai/pull", { model }); } catch (e) { showError(e.message); }
+  loadAI();
+}
+// ── 終わったら知らせる ──
+const chime = new Audio("/assets/sound/completion_chime.wav");
+chime.volume = 0.8;
+function playChime() { if (state.settings.sound === "1") { try { chime.currentTime = 0; chime.play().catch(() => {}); } catch (e) {} } }
+async function syncPrefs() { try { await api("/api/prefs", { notify: state.settings.notify === "1" }); } catch (e) {} }
+async function askBrowserNotify() {
+  // Mac はアプリの通知センターへ、Windows などはブラウザの通知を使う
+  if (APP.native_notify || state.settings.notify !== "1" || !("Notification" in window)) return;
+  if (Notification.permission === "default") { try { await Notification.requestPermission(); } catch (e) {} }
+}
+function browserNotify(title, body) {
+  if (APP.native_notify || state.settings.notify !== "1" || !("Notification" in window) || Notification.permission !== "granted") return;
+  try { new Notification(title, { body, icon: "/assets/icon/icon_256.png" }); } catch (e) {}
+}
+$("testNotify").addEventListener("click", async () => {
+  playChime();
+  if (state.settings.notify !== "1") return;
+  if (APP.native_notify) { try { const r = await api("/api/notify-test", {}); if (r.method === "osascript") showError("通知アプリを用意できなかったため、簡易の通知で出しました（アイコンは字幕ととのえになりません）。"); } catch (e) { showError(e.message); } }
+  else { await askBrowserNotify(); browserNotify("字幕ととのえ", "できあがると、このように知らせます。"); }
+});
+function renderNotifyHint() {
+  $("notifyHint").textContent = APP.native_notify
+    ? "Macの通知センターに、字幕ととのえのアイコンで知らせます。初めてのときは、通知を許可するか聞かれます。"
+    : "ブラウザの通知で知らせます。初めてのときは、ブラウザが通知を許可するか聞きます。";
+}
+function saveSettings() { try { localStorage.setItem("jsp-settings", JSON.stringify(state.settings)); } catch (e) {} }
+$("pickBtn").addEventListener("click", () => $("filePick").click());
+$("changeBtn").addEventListener("click", () => $("filePick").click());
+$("dictBtn").addEventListener("click", () => $("dictPick").click());
+$("dictClear").addEventListener("click", () => { state.dict = null; renderFile(); });
+$("filePick").addEventListener("change", (e) => { takeFiles([...e.target.files]); e.target.value = ""; });
+$("dictPick").addEventListener("change", (e) => { takeFiles([...e.target.files]); e.target.value = ""; });
+let dragDepth = 0;
+window.addEventListener("dragenter", (e) => { e.preventDefault(); dragDepth++; $("veil").classList.add("on"); $("dropZone").classList.add("over"); });
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; $("veil").classList.remove("on"); $("dropZone").classList.remove("over"); } });
+window.addEventListener("drop", (e) => {
+  e.preventDefault(); dragDepth = 0; $("veil").classList.remove("on"); $("dropZone").classList.remove("over");
+  if (state.timer) return;
+  takeFiles([...(e.dataTransfer && e.dataTransfer.files || [])]);
+});
+
+// ── 整える ──
+const STEPS = { ai: ["SRTを読み込む", "ローカルAIが修正候補を作る", "修正版を作って検査する"], basic: ["SRTを読み込む", "辞書・改行・句読点を整えて検査する"] };
+function renderBar(p, text) {
+  const pct = Math.max(0, Math.min(100, Math.round((p || 0) * 100)));
+  $("pfill").style.width = pct + "%";
+  $("pbar").setAttribute("aria-valuenow", String(pct));
+  $("ppct").textContent = pct + "%";
+  if (text) $("ptext").textContent = text;
+  const sec = (Date.now() - state.started) / 1000;
+  if (p > 0.12 && p < 1) {
+    const rest = Math.max(1, Math.round(sec / p * (1 - p)));
+    $("elapsed").textContent = `経過 ${fmtSec(sec)}・残り約 ${fmtSec(rest)}（目安）`;
+  } else {
+    $("elapsed").textContent = `経過 ${fmtSec(sec)}`;
+  }
+}
+const fmtSec = (s) => { s = Math.round(s); return s >= 60 ? `${Math.floor(s / 60)}分${String(s % 60).padStart(2, "0")}秒` : `${s}秒`; };
+function renderSteps(mode, status) {
+  const idx = status === "ready" ? 0 : status === "ai" ? 1 : status === "applying" ? STEPS[mode].length - 1 : STEPS[mode].length;
+  $("steps").replaceChildren(...STEPS[mode].map((t, i) => {
+    const li = document.createElement("li");
+    li.className = i < idx ? "done" : i === idx ? "now" : "";
+    const m = document.createElement("span"); m.className = "mark";
+    if (i < idx) m.textContent = "✓"; else if (i === idx) { const s = document.createElement("span"); s.className = "spin"; m.append(s); } else m.textContent = String(i + 1);
+    li.append(m, t);
+    return li;
+  }));
+}
+async function run(mode) {
+  showError("");
+  await askBrowserNotify();
+  state.timer = -1; renderActions();
+  $("progress").hidden = false; renderSteps(mode, "ready"); state.started = Date.now(); renderBar(0.02, "SRTを読み込んでいます");
+  $("progress").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  try {
+    const job = await api("/api/jobs", { filename: state.srt.name, data: state.srt.data,
+      glossary: state.dict ? { filename: state.dict.name, data: state.dict.data } : null,
+      settings: { preset: "standard", video_size: state.settings.size, font_px: Number(state.settings.font),
+        max_lines: Number(state.settings.lines), max_cps: Number(state.settings.cps),
+        punctuation: state.settings.punctuation, fillers: state.settings.fillers === "1" } });
+    state.job = job.id;
+    await api(`/api/jobs/${job.id}/run`, { mode, model: state.settings.model });
+    renderSteps(mode, mode === "ai" ? "ai" : "applying");
+    state.timer = setInterval(() => poll(mode), 800);
+  } catch (e) { stop(); showError(e.message); }
+}
+async function poll(mode) {
+  try {
+    const j = await api(`/api/jobs/${state.job}`);
+    renderSteps(mode, j.status);
+    renderBar(j.progress, j.progress_text);
+    if (j.status === "done") {
+      renderBar(1, "できあがり"); stop(); playChime();
+      browserNotify("字幕ととのえ", `できあがりました：${j.name}`);
+      setTimeout(() => { location.href = `/jobs/${j.id}/review`; }, 700);
+    }
+    else if (j.status === "error" || j.status === "cancelled") {
+      stop(); showError(j.message || "うまくいきませんでした"); loadJobs();
+      if (j.status === "error") browserNotify("字幕ととのえ", "止まりました：" + (j.message || ""));
+    }
+  } catch (e) { stop(); showError(e.message); }
+}
+function stop() { if (state.timer > 0) clearInterval(state.timer); state.timer = null; $("progress").hidden = true; renderActions(); }
+$("aiBtn").addEventListener("click", () => run("ai"));
+$("basicBtn").addEventListener("click", () => run("basic"));
+$("cancelBtn").addEventListener("click", async () => { if (state.job) { try { await api(`/api/jobs/${state.job}/cancel`, {}); } catch (e) {} } });
+
+// ── 最近の作業 ──
+const STATUS = { done: "できあがり", error: "失敗", cancelled: "中止", ai: "ローカルAIが作業中", applying: "作業中", ready: "未処理" };
+async function loadJobs() {
+  try {
+    const { jobs } = await api("/api/jobs");
+    const box = $("jobs");
+    if (!jobs.length) { box.innerHTML = '<p class="empty">まだありません。</p>'; return; }
+    // 長い一覧で下の案内が埋もれないよう、最初は5件だけ見せる
+    const shown = state.allJobs ? jobs : jobs.slice(0, 5);
+    box.replaceChildren(...shown.map((j) => {
+      const row = document.createElement("div"); row.className = "job";
+      const left = document.createElement("div");
+      const b = document.createElement("b"); b.textContent = j.name;
+      const meta = document.createElement("span");
+      meta.textContent = `${(j.created || "").replace("T", " ").slice(0, 16)}・字幕 ${j.cues}件・${j.mode === "ai" ? (j.model ? "AI（" + j.model + "）" : "AI") : j.mode === "basic" ? "AIなし" : ""}`;
+      const st = document.createElement("span"); st.className = "status " + j.status; st.textContent = "　" + (STATUS[j.status] || j.status);
+      meta.append(st); left.append(b, meta);
+      const right = document.createElement("div");
+      if (j.status === "done" || j.has_result) {
+        const a = document.createElement("a"); a.className = "btn quiet"; a.href = `/jobs/${j.id}/review`; a.textContent = "確認画面";
+        right.append(a);
+      }
+      row.append(left, right);
+      return row;
+    }));
+    if (jobs.length > 5) box.append(el("button", { class: "btn ghost more-jobs", type: "button",
+      onclick: () => { state.allJobs = !state.allJobs; loadJobs(); } }, state.allJobs ? "5件だけ表示" : `すべて表示（${jobs.length}件）`));
+  } catch (e) { /* 一覧が取れなくても新しい作業はできる */ }
+}
+
+// 保存先のフルパス（ユーザー名を含む）は画面に出さない。スクショや画面共有で見えないように
+$("foot").replaceChildren(
+  "このアプリはパソコンの中だけで動きます。「AIで整える」も、このパソコンの Ollama だけを使い、字幕を外へ送りません。"
+  + "ドロップしたSRTはコピーして扱い、作業結果はアプリのフォルダの中の「出力」に保存します。「最近の作業」は、このパソコンの中にだけ表示されます。",
+  el("button", { class: "btn ghost", type: "button", onclick: async () => { try { await api("/api/open-output", {}); } catch (e) { showError(e.message); } } }, "出力フォルダを開く"));
+renderSettings(); renderFile(); renderActions(); loadJobs(); loadAI(); renderNotifyHint(); syncPrefs();
+</script>
+</body>
+</html>
