@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- 字幕ととのえ アプリアイコン
+       コンセプト: 映像フレームの中の字幕2行が、整って確定する（チェック）
+       背景は LULU Apps（Koe Studio）のブランドグラデーション。線の太さと角丸は ChronoFlow のアイコンにそろえる -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#678BFB"/>
+      <stop offset="0.6" stop-color="#534EDC"/>
+      <stop offset="1" stop-color="#3B36B8"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="960" height="960" rx="200" fill="url(#bg)"/>
+  <rect x="32" y="32" width="960" height="960" rx="200" fill="url(#shine)"/>
+  <!-- 映像フレーム -->
+  <rect x="176" y="208" width="672" height="420" rx="72" fill="none" stroke="#FFFFFF" stroke-width="48"/>
+  <!-- 字幕2行 -->
+  <g stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" fill="none">
+    <path d="M 320 478 H 704"/>
+    <path d="M 392 556 H 632"/>
+  </g>
+  <!-- 整った（チェック） -->
+  <path d="M 404 768 L 480 840 L 628 700" stroke="#2FC9A8" stroke-width="56" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
