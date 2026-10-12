@@ -1,0 +1,164 @@
+{
+  "tool": "japanese-subtitle-polish",
+  "source": "input.srt",
+  "source_sha256": "9e256b0c142fa36c4365fcb89f04336abd6b4d11508e71a7ba945f88adab38ff",
+  "output": "input.polished.srt",
+  "output_sha256": "daa1237b40a7b55d0dee17adf0cc65756ba6eb501a4668514ab4fb7408dbad77",
+  "encoding": "utf-8",
+  "bom": false,
+  "newline": "LF",
+  "settings": {
+    "max_lines": 2,
+    "max_chars_per_line": 16,
+    "halfwidth_weight": 0.5,
+    "max_cps": 6.0,
+    "min_line_chars": 2,
+    "linebreak_mode": "auto",
+    "punctuation": "keep",
+    "allow_types": [
+      "フィラー削除"
+    ],
+    "protect_terms": [],
+    "punct_keep": "ー－−—―‐-…‥！!？?〜～"
+  },
+  "changed_cues": [
+    2,
+    3,
+    4,
+    6,
+    8,
+    9,
+    10
+  ],
+  "text_changed_cues": [
+    2,
+    3,
+    9
+  ],
+  "applied": [
+    {
+      "id": "F001",
+      "index": 2,
+      "start": "00:00:03,800",
+      "type": "フィラー削除",
+      "original": "えっと、",
+      "proposed": "",
+      "reason": "利用者がフィラー削除を選んだため",
+      "evidence": "「えっと」は言いよどみで、文の意味を持たない",
+      "status": "apply",
+      "applied_to": 2
+    },
+    {
+      "id": "C001",
+      "index": 3,
+      "start": "00:00:08,600",
+      "type": "誤変換",
+      "original": "動画を造って",
+      "proposed": "動画を作って",
+      "reason": "「造る」は建物・船・酒などに使う。動画は「作る」",
+      "evidence": "一般的な表記の区別。#6でも「動画は…作ってない」と書いている",
+      "status": "apply",
+      "applied_to": 3
+    },
+    {
+      "id": "F002",
+      "index": 9,
+      "start": "00:00:35,400",
+      "type": "フィラー削除",
+      "original": "まあ、それで",
+      "proposed": "それで",
+      "reason": "利用者がフィラー削除を選んだため",
+      "evidence": "「まあ」は前置きの言いよどみ。「〜って感じですかね」のぼかしは話者の口調なので残す",
+      "status": "apply",
+      "applied_to": 9
+    }
+  ],
+  "script_only": [
+    {
+      "index": 4,
+      "before": [
+        "いやー正直、最初はぜんぜん上手くいかへんかったです"
+      ],
+      "after": [
+        "いやー正直、最初はぜんぜん",
+        "上手くいかへんかったです"
+      ],
+      "note": "改行を整えた：1行25字（上限16字）",
+      "punctuation": false
+    },
+    {
+      "index": 6,
+      "before": [
+        "今は子ども向けの動画は一つも作ってないです"
+      ],
+      "after": [
+        "今は子ども向けの動画は",
+        "一つも作ってないです"
+      ],
+      "note": "改行を整えた：1行21字（上限16字）",
+      "punctuation": false
+    },
+    {
+      "index": 8,
+      "before": [
+        "あの人に二、三回教えてもらっただけで世界が変わりました"
+      ],
+      "after": [
+        "あの人に二、三回教えてもらった",
+        "だけで世界が変わりました"
+      ],
+      "note": "改行を整えた：1行27字（上限16字）",
+      "punctuation": false
+    },
+    {
+      "index": 10,
+      "before": [
+        "これから始める人には",
+        "とにかく数をこなせって言いたいです"
+      ],
+      "after": [
+        "これから始める人にはとにかく",
+        "数をこなせって言いたいです"
+      ],
+      "note": "改行を整えた：1行17字（上限16字）",
+      "punctuation": false
+    }
+  ],
+  "review": [
+    {
+      "id": "C002",
+      "index": 3,
+      "start": "00:00:08,600",
+      "type": "表記ゆれ",
+      "original": "子供向け",
+      "proposed": "子ども向け",
+      "reason": "#6の「子ども向け」と表記がゆれている。どちらにそろえるかは媒体の表記ルールで決まるため、ここでは決めない",
+      "evidence": "同じファイル内の表記：#3「子供」／#6「子ども」",
+      "status": "review"
+    },
+    {
+      "id": "C003",
+      "index": 7,
+      "start": "00:00:27,000",
+      "type": "固有名詞",
+      "original": "ヤマダさん",
+      "proposed": "",
+      "reason": "人名。漢字表記（山田・山多など）が分からないため、カタカナのまま残した",
+      "evidence": "辞書に登録なし。本人・取材メモで表記を確認する",
+      "status": "review"
+    }
+  ],
+  "refused": [],
+  "auto_review": [
+    {
+      "kind": "長い",
+      "index": 1,
+      "detail": "25字 / 3.00秒 = 1秒あたり8.3字（目安 6字）",
+      "cps": 8.333333333333334
+    }
+  ],
+  "notes": [],
+  "glossary": null,
+  "preset": "standard",
+  "candidates_file": "candidates_with_fillers.json"
+}

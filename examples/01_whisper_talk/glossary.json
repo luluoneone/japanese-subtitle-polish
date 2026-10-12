@@ -1,0 +1,7 @@
+{
+  "terms": [
+    {"correct": "Premiere Pro", "variants": ["プレミアプロ", "プレミア・プロ", "premiere pro"], "note": "Adobeの編集ソフト"},
+    {"correct": "YouTube", "variants": ["ユーチューブ"], "note": "大文字・小文字の違いも辞書で直す"},
+    {"correct": "DaVinci Resolve", "variants": ["ダビンチリゾルブ", "ダヴィンチリゾルブ", "davinci resolve"], "note": ""}
+  ]
+}

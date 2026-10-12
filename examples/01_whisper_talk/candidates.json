@@ -1,0 +1,76 @@
+{
+  "schema": "japanese-subtitle-polish/candidates-v1",
+  "source_file": "input.srt",
+  "source_sha256": "14c7661cd7e5737021c930b81de7f78450d86ba0469768419cec3508ea11adb0",
+  "candidates": [
+    {
+      "id": "G001",
+      "index": 2,
+      "start": "00:00:02,100",
+      "type": "固有名詞",
+      "original": "プレミアプロ",
+      "proposed": "Premiere Pro",
+      "reason": "指定辞書の正式表記にそろえる",
+      "evidence": "辞書: Premiere Pro ← プレミアプロ（Adobeの編集ソフト）",
+      "status": "apply",
+      "source": "glossary"
+    },
+    {
+      "id": "G002",
+      "index": 6,
+      "start": "00:00:28,500",
+      "type": "固有名詞",
+      "original": "youtube",
+      "proposed": "YouTube",
+      "reason": "指定辞書の正式表記にそろえる",
+      "evidence": "辞書: YouTube ← youtube（大文字・小文字の違いも辞書で直す）",
+      "status": "apply",
+      "source": "glossary"
+    },
+    {
+      "id": "G003",
+      "index": 13,
+      "start": "00:00:59,100",
+      "type": "固有名詞",
+      "original": "ダビンチリゾルブ",
+      "proposed": "DaVinci Resolve",
+      "reason": "指定辞書の正式表記にそろえる",
+      "evidence": "辞書: DaVinci Resolve ← ダビンチリゾルブ",
+      "status": "apply",
+      "source": "glossary"
+    },
+    {
+      "id": "C001",
+      "index": 3,
+      "start": "00:00:08,400",
+      "type": "誤変換",
+      "original": "以外と大事",
+      "proposed": "意外と大事",
+      "reason": "「以外と大事」は文として成り立たない。「思ったより」の意味の「意外と」の変換ミス",
+      "evidence": "文脈：同じ字幕の「〜ので意外と大事なんですよね」",
+      "status": "apply"
+    },
+    {
+      "id": "C002",
+      "index": 8,
+      "start": "00:00:37,600",
+      "type": "表記ゆれ",
+      "original": "注意して下さい",
+      "proposed": "注意してください",
+      "reason": "補助動詞の「ください」をひらがなにそろえる",
+      "evidence": "同じファイル内の表記：#12「保存しておいてください」",
+      "status": "apply"
+    },
+    {
+      "id": "C003",
+      "index": 11,
+      "start": "00:00:49,400",
+      "type": "誤変換",
+      "original": "機能追加された",
+      "proposed": "昨日追加された",
+      "reason": "「機能追加された書き出しキュー」も「昨日追加された書き出しキュー」も文として成り立ち、文字だけでは決められない",
+      "evidence": "「機能」と「昨日」はどちらも「きのう」と読むため、音声だけでは決めにくい。話者か台本、アップデートの時期で確認する",
+      "status": "review"
+    }
+  ]
+}

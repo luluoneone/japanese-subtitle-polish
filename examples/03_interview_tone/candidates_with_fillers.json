@@ -1,0 +1,62 @@
+{
+  "schema": "japanese-subtitle-polish/candidates-v1",
+  "source_file": "input.srt",
+  "source_sha256": "9e256b0c142fa36c4365fcb89f04336abd6b4d11508e71a7ba945f88adab38ff",
+  "candidates": [
+    {
+      "id": "C001",
+      "index": 3,
+      "start": "00:00:08,600",
+      "type": "誤変換",
+      "original": "動画を造って",
+      "proposed": "動画を作って",
+      "reason": "「造る」は建物・船・酒などに使う。動画は「作る」",
+      "evidence": "一般的な表記の区別。#6でも「動画は…作ってない」と書いている",
+      "status": "apply"
+    },
+    {
+      "id": "C002",
+      "index": 3,
+      "start": "00:00:08,600",
+      "type": "表記ゆれ",
+      "original": "子供向け",
+      "proposed": "子ども向け",
+      "reason": "#6の「子ども向け」と表記がゆれている。どちらにそろえるかは媒体の表記ルールで決まるため、ここでは決めない",
+      "evidence": "同じファイル内の表記：#3「子供」／#6「子ども」",
+      "status": "review"
+    },
+    {
+      "id": "C003",
+      "index": 7,
+      "start": "00:00:27,000",
+      "type": "固有名詞",
+      "original": "ヤマダさん",
+      "proposed": "",
+      "reason": "人名。漢字表記（山田・山多など）が分からないため、カタカナのまま残した",
+      "evidence": "辞書に登録なし。本人・取材メモで表記を確認する",
+      "status": "review"
+    },
+    {
+      "id": "F001",
+      "index": 2,
+      "start": "00:00:03,800",
+      "type": "フィラー削除",
+      "original": "えっと、",
+      "proposed": "",
+      "reason": "利用者がフィラー削除を選んだため",
+      "evidence": "「えっと」は言いよどみで、文の意味を持たない",
+      "status": "apply"
+    },
+    {
+      "id": "F002",
+      "index": 9,
+      "start": "00:00:35,400",
+      "type": "フィラー削除",
+      "original": "まあ、それで",
+      "proposed": "それで",
+      "reason": "利用者がフィラー削除を選んだため",
+      "evidence": "「まあ」は前置きの言いよどみ。「〜って感じですかね」のぼかしは話者の口調なので残す",
+      "status": "apply"
+    }
+  ]
+}

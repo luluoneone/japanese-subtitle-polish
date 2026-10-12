@@ -1,0 +1,42 @@
+{
+  "schema": "japanese-subtitle-polish/candidates-v1",
+  "source_file": "input.srt",
+  "source_sha256": "986d2a3f1d90ddbb3688c5762c64f2954941a69d282cb42260780ad3fdde9a3f",
+  "candidates": [
+    {
+      "id": "G001",
+      "index": 7,
+      "start": "00:00:16,000",
+      "type": "固有名詞",
+      "original": "after effects",
+      "proposed": "After Effects",
+      "reason": "指定辞書の正式表記にそろえる",
+      "evidence": "辞書: After Effects ← after effects",
+      "status": "apply",
+      "source": "glossary"
+    },
+    {
+      "id": "G002",
+      "index": 13,
+      "start": "00:00:43,000",
+      "type": "固有名詞",
+      "original": "ルミトリカラー",
+      "proposed": "Lumetriカラー",
+      "reason": "指定辞書の正式表記にそろえる",
+      "evidence": "辞書: Lumetriカラー ← ルミトリカラー（Premiere Proの色補正パネル）",
+      "status": "apply",
+      "source": "glossary"
+    },
+    {
+      "id": "C001",
+      "index": 6,
+      "start": "00:00:12,200",
+      "type": "誤字",
+      "original": "読み混みます",
+      "proposed": "読み込みます",
+      "reason": "「読み混む」という語はない。LUTファイルを取り込む操作なので「読み込む」",
+      "evidence": "文脈：同じ字幕の「ルックアップテーブルを〜」と、#7・#9のLUTを使う説明",
+      "status": "apply"
+    }
+  ]
+}

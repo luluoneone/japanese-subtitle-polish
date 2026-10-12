@@ -1,0 +1,136 @@
+{
+  "tool": "japanese-subtitle-polish",
+  "source": "input.srt",
+  "source_sha256": "986d2a3f1d90ddbb3688c5762c64f2954941a69d282cb42260780ad3fdde9a3f",
+  "output": "input.polished.srt",
+  "output_sha256": "bfb8ff5d9b363bb10c04f07f514fb657eb251c9f24de9aa23531e4f8511c6e5e",
+  "encoding": "utf-8",
+  "bom": true,
+  "newline": "CRLF",
+  "settings": {
+    "max_lines": 2,
+    "max_chars_per_line": 16,
+    "halfwidth_weight": 0.5,
+    "max_cps": 6.0,
+    "min_line_chars": 2,
+    "linebreak_mode": "auto",
+    "punctuation": "keep",
+    "allow_types": [],
+    "protect_terms": [],
+    "punct_keep": "ー－−—―‐-…‥！!？?〜～"
+  },
+  "changed_cues": [
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    13
+  ],
+  "text_changed_cues": [
+    6,
+    7,
+    13
+  ],
+  "applied": [
+    {
+      "id": "C001",
+      "index": 6,
+      "start": "00:00:12,200",
+      "type": "誤字",
+      "original": "読み混みます",
+      "proposed": "読み込みます",
+      "reason": "「読み混む」という語はない。LUTファイルを取り込む操作なので「読み込む」",
+      "evidence": "文脈：同じ字幕の「ルックアップテーブルを〜」と、#7・#9のLUTを使う説明",
+      "status": "apply",
+      "applied_to": 6
+    },
+    {
+      "id": "G001",
+      "index": 7,
+      "start": "00:00:16,000",
+      "type": "固有名詞",
+      "original": "after effects",
+      "proposed": "After Effects",
+      "reason": "指定辞書の正式表記にそろえる",
+      "evidence": "辞書: After Effects ← after effects",
+      "status": "apply",
+      "source": "glossary",
+      "applied_to": 7
+    },
+    {
+      "id": "G002",
+      "index": 13,
+      "start": "00:00:43,000",
+      "type": "固有名詞",
+      "original": "ルミトリカラー",
+      "proposed": "Lumetriカラー",
+      "reason": "指定辞書の正式表記にそろえる",
+      "evidence": "辞書: Lumetriカラー ← ルミトリカラー（Premiere Proの色補正パネル）",
+      "status": "apply",
+      "source": "glossary",
+      "applied_to": 13
+    }
+  ],
+  "script_only": [
+    {
+      "index": 2,
+      "before": [
+        "今回はPremiere",
+        "ProのLumetriカラーで説明します"
+      ],
+      "after": [
+        "今回はPremiere Proの",
+        "Lumetriカラーで説明します"
+      ],
+      "note": "改行を整えた：語の途中で改行（emiere／ProのL）",
+      "punctuation": false
+    },
+    {
+      "index": 8,
+      "before": [
+        "適用量は100",
+        "%ではなく70%くらいに下げます"
+      ],
+      "after": [
+        "適用量は100%ではなく",
+        "70%くらいに下げます"
+      ],
+      "note": "改行を整えた：語の途中で改行（用量は100／%ではなく7）",
+      "punctuation": false
+    },
+    {
+      "index": 9,
+      "before": [
+        "ログ素材には変換用のLUTを先に当てます"
+      ],
+      "after": [
+        "ログ素材には",
+        "変換用のLUTを先に当てます"
+      ],
+      "note": "改行を整えた：1行18.5字（上限16字）",
+      "punctuation": false
+    },
+    {
+      "index": 10,
+      "before": [
+        "色が転ぶ場合は",
+        "ホワイトバランスを先に直してください"
+      ],
+      "after": [
+        "色が転ぶ場合はホワイトバランスを",
+        "先に直してください"
+      ],
+      "note": "改行を整えた：1行18字（上限16字）",
+      "punctuation": false
+    }
+  ],
+  "review": [],
+  "refused": [],
+  "auto_review": [],
+  "notes": [],
+  "glossary": "glossary.tsv",
+  "preset": "standard",
+  "candidates_file": "candidates.json"
+}
