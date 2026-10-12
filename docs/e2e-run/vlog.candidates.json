@@ -1,0 +1,64 @@
+{
+  "schema": "japanese-subtitle-polish/candidates-v1",
+  "source_file": "vlog.srt",
+  "source_sha256": "490b809ad6fe261e547d421a99da156ba570b6e84faeb8068f281e0f13023bf6",
+  "candidates": [
+    {
+      "id": "G001",
+      "index": 3,
+      "start": "00:00:09,100",
+      "type": "固有名詞",
+      "original": "キャップカット",
+      "proposed": "CapCut",
+      "reason": "指定辞書の正式表記にそろえる。文脈も「無料のアプリ」で、辞書の CapCut を指している",
+      "evidence": "辞書: CapCut ← キャップカット／文脈：同じ字幕の「無料のアプリで」",
+      "status": "apply",
+      "source": "glossary"
+    },
+    {
+      "id": "G002",
+      "index": 14,
+      "start": "00:00:56,000",
+      "type": "固有名詞",
+      "original": "キャップカット",
+      "proposed": "CapCut",
+      "reason": "指定辞書の正式表記にそろえる。#3と同じアプリを指している",
+      "evidence": "辞書: CapCut ← キャップカット／文脈：同じ字幕の「書き出す時の設定」、#3「無料のアプリ」",
+      "status": "apply",
+      "source": "glossary"
+    },
+    {
+      "id": "C001",
+      "index": 7,
+      "start": "00:00:28,800",
+      "type": "誤字",
+      "original": "結講時間",
+      "proposed": "結構時間",
+      "reason": "「結講」という語は存在しない。「結構時間がかかる」の誤字",
+      "evidence": "文脈：同じ字幕の「〜時間がかかるんですよね」。「結講」では語として成り立たない",
+      "status": "apply"
+    },
+    {
+      "id": "C002",
+      "index": 8,
+      "start": "00:00:33,200",
+      "type": "誤字",
+      "original": "5",
+      "proposed": "",
+      "reason": "本文が数字「5」だけで、直後の#9「5分の動画で」と重複している可能性がある（言い直し・音声認識の誤り・字幕の分割ミスのいずれか）。数字は音声なしに変えず、字幕の削除・結合もこのSkillの範囲外",
+      "evidence": "音声 00:00:33 付近（#8〜#9）で、話者が「5」と言い直しているか確認する",
+      "status": "review"
+    },
+    {
+      "id": "C003",
+      "index": 12,
+      "start": "00:00:47,800",
+      "type": "固有名詞",
+      "original": "photoshop",
+      "proposed": "Photoshop",
+      "reason": "Adobeの製品名と思われるが、指定辞書になく、この作業では公式表記を確認していないため大文字・小文字を直さなかった",
+      "evidence": "Adobe公式サイトの製品名表記、または辞書への追加で確認する",
+      "status": "review"
+    }
+  ]
+}

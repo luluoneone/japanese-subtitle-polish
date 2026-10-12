@@ -1,0 +1,183 @@
+{
+  "tool": "japanese-subtitle-polish",
+  "source": "vlog.srt",
+  "source_sha256": "490b809ad6fe261e547d421a99da156ba570b6e84faeb8068f281e0f13023bf6",
+  "output": "vlog.polished.srt",
+  "output_sha256": "30f6a856fcf6c32db2a288abefa796f1ddafbf239ee516e8044d4c72f9848121",
+  "encoding": "utf-8",
+  "bom": true,
+  "newline": "CRLF",
+  "settings": {
+    "max_lines": 2,
+    "max_chars_per_line": 16,
+    "halfwidth_weight": 0.5,
+    "max_cps": 6.0,
+    "min_line_chars": 2,
+    "linebreak_mode": "auto",
+    "allow_types": [],
+    "protect_terms": []
+  },
+  "changed_cues": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    10,
+    14
+  ],
+  "text_changed_cues": [
+    3,
+    7,
+    14
+  ],
+  "applied": [
+    {
+      "id": "G001",
+      "index": 3,
+      "start": "00:00:09,100",
+      "type": "固有名詞",
+      "original": "キャップカット",
+      "proposed": "CapCut",
+      "reason": "指定辞書の正式表記にそろえる。文脈も「無料のアプリ」で、辞書の CapCut を指している",
+      "evidence": "辞書: CapCut ← キャップカット／文脈：同じ字幕の「無料のアプリで」",
+      "status": "apply",
+      "source": "glossary",
+      "applied_to": 3
+    },
+    {
+      "id": "C001",
+      "index": 7,
+      "start": "00:00:28,800",
+      "type": "誤字",
+      "original": "結講時間",
+      "proposed": "結構時間",
+      "reason": "「結講」という語は存在しない。「結構時間がかかる」の誤字",
+      "evidence": "文脈：同じ字幕の「〜時間がかかるんですよね」。「結講」では語として成り立たない",
+      "status": "apply",
+      "applied_to": 7
+    },
+    {
+      "id": "G002",
+      "index": 14,
+      "start": "00:00:56,000",
+      "type": "固有名詞",
+      "original": "キャップカット",
+      "proposed": "CapCut",
+      "reason": "指定辞書の正式表記にそろえる。#3と同じアプリを指している",
+      "evidence": "辞書: CapCut ← キャップカット／文脈：同じ字幕の「書き出す時の設定」、#3「無料のアプリ」",
+      "status": "apply",
+      "source": "glossary",
+      "applied_to": 14
+    }
+  ],
+  "linebreak_only": [
+    {
+      "index": 1,
+      "before": [
+        "はいどうも、今回はスマホで撮った動画に"
+      ],
+      "after": [
+        "はいどうも、今回は",
+        "スマホで撮った動画に"
+      ],
+      "note": "改行を整えた：1行19字（上限16字）"
+    },
+    {
+      "index": 2,
+      "before": [
+        "テロップを入れる方法をご紹介します"
+      ],
+      "after": [
+        "テロップを入れる",
+        "方法をご紹介します"
+      ],
+      "note": "改行を整えた：1行17字（上限16字）"
+    },
+    {
+      "index": 4,
+      "before": [
+        "えーと、パソコン版でもスマホ版でも同じように使えます"
+      ],
+      "after": [
+        "えーと、パソコン版でも",
+        "スマホ版でも同じように使えます"
+      ],
+      "note": "改行を整えた：1行26字（上限16字）"
+    },
+    {
+      "index": 5,
+      "before": [
+        "まず自動字幕起こしの機能で文字を出して"
+      ],
+      "after": [
+        "まず自動字幕起こしの機能で",
+        "文字を出して"
+      ],
+      "note": "改行を整えた：1行19字（上限16字）"
+    },
+    {
+      "index": 6,
+      "before": [
+        "そのあと誤字を一つずつ直していくんですけど"
+      ],
+      "after": [
+        "そのあと誤字を一つずつ",
+        "直していくんですけど"
+      ],
+      "note": "改行を整えた：1行21字（上限16字）"
+    },
+    {
+      "index": 10,
+      "before": [
+        "だいたい30分くらいは見ておいたほうがいいと思います"
+      ],
+      "after": [
+        "だいたい30分くらいは",
+        "見ておいたほうがいいと思います"
+      ],
+      "note": "改行を整えた：1行25字（上限16字）"
+    }
+  ],
+  "review": [
+    {
+      "id": "C002",
+      "index": 8,
+      "start": "00:00:33,200",
+      "type": "誤字",
+      "original": "5",
+      "proposed": "",
+      "reason": "本文が数字「5」だけで、直後の#9「5分の動画で」と重複している可能性がある（言い直し・音声認識の誤り・字幕の分割ミスのいずれか）。数字は音声なしに変えず、字幕の削除・結合もこのSkillの範囲外",
+      "evidence": "音声 00:00:33 付近（#8〜#9）で、話者が「5」と言い直しているか確認する",
+      "status": "review"
+    },
+    {
+      "id": "C003",
+      "index": 12,
+      "start": "00:00:47,800",
+      "type": "固有名詞",
+      "original": "photoshop",
+      "proposed": "Photoshop",
+      "reason": "Adobeの製品名と思われるが、指定辞書になく、この作業では公式表記を確認していないため大文字・小文字を直さなかった",
+      "evidence": "Adobe公式サイトの製品名表記、または辞書への追加で確認する",
+      "status": "review"
+    }
+  ],
+  "refused": [],
+  "auto_review": [
+    {
+      "kind": "長い",
+      "index": 11,
+      "detail": "35字 / 5.20秒 = 1秒あたり6.7字（上限 6字）",
+      "cps": 6.730769230769231
+    },
+    {
+      "kind": "収まらない",
+      "index": 11,
+      "detail": "2行・最長19字（上限 2行・16字）"
+    }
+  ],
+  "notes": []
+}
