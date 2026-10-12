@@ -2,7 +2,7 @@
 
 ![字幕ととのえ — 時刻はそのまま　字幕だけを整える](docs/images/banner.jpg)
 
-▶ **[紹介動画（50秒）](docs/subtitle-polish-pv.mp4)**：できること・できないことを短くまとめました（ナレーションは [Koe Studio](https://github.com/luluoneone/koe-studio) の Gemini TTS。BGM は購入素材のため、動画は MIT License の対象外です。[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)）。
+▶ **[紹介動画（50秒）](https://youtu.be/c4BLu10hilE)**：できること・できないことを短くまとめました（ナレーションは [Koe Studio](https://github.com/luluoneone/koe-studio) の Gemini TTS。BGM は購入素材のため、動画は MIT License の対象外です。[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)）。
 
 Whisperや動画編集ソフトから書き出した**日本語のSRT字幕**を、**番号と時刻を1ミリ秒も動かさずに**整える、無料のアプリです。
 SRTを画面にドロップするだけで使えます。Claude Code や Codex から使う Agent Skill としても動きます。
